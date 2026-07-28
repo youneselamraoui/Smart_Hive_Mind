@@ -1,0 +1,156 @@
+volumes:
+  mongo-data:
+  chroma-data:
+
+networks:
+  shm-network:
+    driver: bridge
+
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - shm-network
+    healthcheck:
+      test: mongosh --eval "db.adminCommand('ping')" --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/smart-hive-mind
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:4000
+      - AI_DIAGNOSTIC_URL=http://ai-diagnostic:8000
+      - AI_PREDICTIVE_URL=http://ai-predictive:8000
+      - AI_DECISIONNEL_URL=http://ai-decisionnel:8000
+      - AI_CONVERSATIONAL_URL=http://ai-conversational:8000
+      - JWT_SECRET=${JWT_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SEPOLIA_RPC_URL=${SEPOLIA_RPC_URL}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - shm-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - shm-network
+
+  ai-diagnostic:
+    build: ./ai-services/diagnostic
+    ports:
+      - "8001:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/smart-hive-mind
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - shm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ai-predictive:
+    build: ./ai-services/predictive
+    ports:
+      - "8002:8000"
+    depends_on:
+      - mongo
+    networks:
+      - shm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  ai-decisionnel:
+    build: ./ai-services/decisionnel
+    ports:
+      - "8003:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - mongo
+    networks:
+      - shm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ai-conversational:
+    build: ./ai-services/conversational
+    ports:
+      - "8004:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHROMA_PERSIST_DIR=/data/chroma
+    volumes:
+      - chroma-data:/data/chroma
+    depends_on:
+      - mongo
+    networks:
+      - shm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ai-agentic:
+    build: ./ai-services/agentic
+    ports:
+      - "8005:8000"
+    environment:
+      - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+    depends_on:
+      - mongo
+    networks:
+      - shm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  blockchain-service:
+    build: ./blockchain-service
+    ports:
+      - "4000:4000"
+    environment:
+      - SEPOLIA_RPC_URL=${SEPOLIA_RPC_URL}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - PORT=4000
+    networks:
+      - shm-network

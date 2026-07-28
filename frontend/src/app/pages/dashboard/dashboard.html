@@ -1,0 +1,110 @@
+@if (loaded && isEmpty()) {
+  <div class="empty-state">
+    <svg class="empty-svg" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="40" cy="40" r="3" fill="var(--honey-500)" opacity="0.4"/>
+      <circle cx="100" cy="20" r="4" fill="var(--honey-500)" opacity="0.6"/>
+      <circle cx="160" cy="50" r="3" fill="var(--honey-500)" opacity="0.4"/>
+      <circle cx="70" cy="80" r="4" fill="var(--honey-500)" opacity="0.5"/>
+      <circle cx="130" cy="90" r="3" fill="var(--honey-500)" opacity="0.4"/>
+      <circle cx="30" cy="100" r="2" fill="var(--honey-500)" opacity="0.3"/>
+      <circle cx="170" cy="100" r="2" fill="var(--honey-500)" opacity="0.3"/>
+      <circle cx="55" cy="50" r="2" fill="var(--honey-500)" opacity="0.35"/>
+      <circle cx="145" cy="30" r="2" fill="var(--honey-500)" opacity="0.35"/>
+      <line x1="40" y1="40" x2="100" y2="20" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+      <line x1="100" y1="20" x2="160" y2="50" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+      <line x1="55" y1="50" x2="70" y2="80" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+      <line x1="70" y1="80" x2="130" y2="90" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+      <line x1="130" y1="90" x2="160" y2="50" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+      <line x1="40" y1="40" x2="55" y2="50" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+      <line x1="100" y1="20" x2="145" y2="30" stroke="var(--honey-500)" stroke-width="0.8" opacity="0.2"/>
+    </svg>
+    <h2>Votre ruche est encore silencieuse</h2>
+    <p>Publiez votre premier travail et lancez la dynamique</p>
+    <a routerLink="/publications/new" class="btn btn-primary">Créer une publication</a>
+  </div>
+} @else {
+  <div class="dashboard">
+    <!-- Hero metrics -->
+    <div class="hero-row">
+      <div class="hero-stat">
+        <span class="hero-value">{{ data?.totalMembres ?? '—' }}</span>
+        <span class="hero-label">MEMBRES ACTIFS</span>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-value">{{ data?.totalPublications ?? '—' }}</span>
+        <span class="hero-label">PUBLICATIONS PROTÉGÉES</span>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-value">{{ data?.totalMissions ?? '—' }}</span>
+        <span class="hero-label">MISSIONS VALIDÉES</span>
+      </div>
+    </div>
+
+    <!-- Secondary cards grid -->
+    <div class="cards-grid">
+      <!-- Publications status -->
+      <div class="card-subtle" routerLink="/app/publications">
+        <div class="card-head">
+          <span class="card-title">Publications</span>
+          <span class="card-count">{{ data?.totalPublications ?? 0 }}</span>
+        </div>
+        @if (data?.repartitionPublications) {
+          <div class="seal-row">
+            @for (item of getRepartitionKeys(data?.repartitionPublications); track $index) {
+              <div class="seal-cell">
+                <app-hex-seal [status]="item.status" [size]="40"></app-hex-seal>
+                <span class="seal-count">{{ item.count }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Missions status -->
+      <div class="card-subtle" routerLink="/app/placements">
+        <div class="card-head">
+          <span class="card-title">Missions</span>
+          <span class="card-count">{{ data?.totalMissions ?? 0 }}</span>
+        </div>
+        @if (data?.repartitionMissions) {
+          <div class="seal-row">
+            @for (item of getRepartitionKeys(data?.repartitionMissions); track $index) {
+              <div class="seal-cell">
+                <app-hex-seal [status]="item.status" [size]="40"></app-hex-seal>
+                <span class="seal-count">{{ item.count }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Simple stat cards -->
+      <a class="card-subtle card-simple" routerLink="/app/communaute">
+        <span class="card-title">Discussions</span>
+        <span class="card-count">{{ data?.totalSujets ?? 0 }}</span>
+      </a>
+
+      <a class="card-subtle card-simple" routerLink="/app/evenements">
+        <span class="card-title">Événements</span>
+        <span class="card-count">{{ data?.totalEvenements ?? 0 }}</span>
+      </a>
+
+      <a class="card-subtle card-simple" routerLink="/app/entrepreneuriat">
+        <span class="card-title">Idées</span>
+        <span class="card-count">{{ data?.totalIdees ?? 0 }}</span>
+      </a>
+
+      <a class="card-subtle card-simple" routerLink="/app/placements">
+        <span class="card-title">Offres</span>
+        <span class="card-count">{{ data?.totalOffres ?? 0 }}</span>
+      </a>
+
+      <a class="card-subtle card-simple" routerLink="/app/skills">
+        <span class="card-title">Formations</span>
+        <span class="card-count">{{ data?.totalFormations ?? 0 }}</span>
+      </a>
+    </div>
+  </div>
+}

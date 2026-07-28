@@ -1,0 +1,91 @@
+<div class="auth-page" @fadeInUp>
+  <div class="auth-form-col">
+    <div class="auth-form-container">
+      <a routerLink="/" class="auth-logo">
+        <svg viewBox="0 0 48 48" fill="none" width="36" height="36">
+          <polygon points="24 3 43 16 43 32 24 45 5 32 5 16" stroke="var(--honey-500)" stroke-width="1.5" fill="none" />
+          <text x="24" y="30" text-anchor="middle" font-family="Fraunces,serif" font-size="16" font-weight="700" fill="var(--ink-900)">SHM</text>
+        </svg>
+      </a>
+
+      <div class="auth-heading">
+        <h1>Créer un compte</h1>
+        <p>Rejoignez la plateforme collaborative</p>
+      </div>
+
+      <form (ngSubmit)="register()" class="auth-form">
+        <div class="row">
+          <div class="field flex-1">
+            <label for="prenom">Prénom</label>
+            <input id="prenom" [(ngModel)]="prenom" name="prenom" placeholder="Votre prénom" required />
+          </div>
+          <div class="field flex-1">
+            <label for="nom">Nom</label>
+            <input id="nom" [(ngModel)]="nom" name="nom" placeholder="Votre nom" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" [(ngModel)]="email" name="email" placeholder="vous@email.com" autocomplete="email" required />
+        </div>
+
+        <div class="field">
+          <label for="password">Mot de passe</label>
+          <input id="password" type="password" [(ngModel)]="password" name="password" placeholder="••••••••" autocomplete="new-password" required />
+        </div>
+
+        @if (error) {
+          <div class="field-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            {{ error }}
+          </div>
+        }
+
+        @if (success) {
+          <div class="field-success">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ success }}
+          </div>
+        }
+
+        <button type="submit" class="btn btn-primary" [disabled]="!email || !password || !nom || !prenom || loading">
+          @if (loading) { <span class="spinner" [innerHTML]="ICONS.spinner"></span> }
+          <span>{{ loading ? 'Inscription…' : 'Créer mon compte' }}</span>
+        </button>
+      </form>
+
+      <p class="auth-footer">
+        Déjà un compte ? <a routerLink="/login">Se connecter</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="auth-panel-col">
+    <div class="auth-panel-bg"></div>
+    <div class="auth-panel-content">
+      <blockquote class="auth-tagline">
+        « La confiance ne se déclare pas,<br>elle se prouve. »
+      </blockquote>
+
+      <div class="proof-feed">
+        <div class="proof-line">
+          <span class="proof-dot proof-dot--verify"></span>
+          <span class="proof-mono">0x9f2a…ancré</span>
+          <span class="proof-time">• il y a 4s</span>
+        </div>
+        <div class="proof-line">
+          <span class="proof-dot proof-dot--honey"></span>
+          <span class="proof-mono">Profil certifié mis à jour</span>
+          <span class="proof-time">• il y a 23s</span>
+        </div>
+        <div class="proof-line">
+          <span class="proof-dot proof-dot--agentic"></span>
+          <span class="proof-mono">Publication évaluée</span>
+          <span class="proof-score">8.4/10</span>
+          <span class="proof-time">• il y a 1m</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

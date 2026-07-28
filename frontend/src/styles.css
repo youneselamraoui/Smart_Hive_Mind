@@ -1,0 +1,144 @@
+@import 'primeicons/primeicons.css';
+
+:root {
+  /* ── Palette tokens ─────────────────────────── */
+  --ink-900:   #10131F;
+  --ink-700:   #2A2F45;
+  --paper-50:  #F6F5F2;
+  --paper-100: #EDEBE4;
+  --honey-500: #D9A02B;
+  --honey-600: #B8841C;
+  --verify-500:#1F9E6D;
+  --agentic-500:#5B4FE0;
+  --alert-500: #C4432E;
+  --line-200:  rgba(16,19,31,0.10);
+
+  /* ── Legacy aliases (migration) ──────────────── */
+  --color-primary-blue: var(--honey-500);
+  --color-deep-blue: var(--ink-900);
+  --color-sky-blue: #D4C8A8;
+  --color-sky-blue-light: #EEEAE0;
+  --color-cream: var(--paper-100);
+  --color-cream-light: var(--paper-50);
+
+  /* ── Surfaces & text ─────────────────────────── */
+  --color-bg: var(--paper-50);
+  --color-surface: #ffffff;
+  --color-card: var(--paper-100);
+  --color-text: var(--ink-900);
+  --color-text-secondary: var(--ink-700);
+  --color-border: var(--line-200);
+  --color-success: var(--verify-500);
+  --color-warning: var(--honey-500);
+  --color-error: var(--alert-500);
+
+  /* ── Shadows ─────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(16,19,31,0.04);
+  --shadow-sm: 0 1px 3px rgba(16,19,31,0.06);
+  --shadow-md: 0 4px 12px rgba(16,19,31,0.07);
+  --shadow-lg: 0 8px 30px rgba(217,160,43,0.10);
+  --shadow-card: 0 1px 3px rgba(16,19,31,0.05);
+
+  /* ── Radii ───────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ── Typography scale ────────────────────────── */
+  --text-xs:   0.70rem;
+  --text-sm:   0.80rem;
+  --text-base: 0.92rem;
+  --text-lg:   1.05rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.50rem;
+  --text-3xl:  1.85rem;
+  --text-4xl:  2.25rem;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'IBM Plex Sans', var(--font-sans);
+  --font-mono: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace;
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--honey-500);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+a:hover { color: var(--ink-900); }
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5em;
+  line-height: var(--leading-tight);
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--ink-900);
+}
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+
+p { margin: 0 0 1em; color: var(--ink-700); }
+
+code, .hash, .timestamp, .score-ia, .member-id, .seal-hash {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* ── Dark theme ────────────────────────────── */
+[data-theme="dark"] {
+  --color-bg: var(--ink-900);
+  --color-surface: #1A1D2E;
+  --color-border: rgba(246,245,242,0.10);
+  --color-text: var(--paper-50);
+  --color-text-secondary: #A0A5B1;
+  --color-card: #1A1D2E;
+  --color-primary-blue: var(--honey-500);
+  --color-deep-blue: var(--ink-900);
+  --color-sky-blue: #A8944A;
+  --color-sky-blue-light: #1C1A28;
+  --color-cream: #1A1D2E;
+  --color-cream-light: var(--ink-900);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(217,160,43,0.08);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ── Accessibilité : focus clavier & mouvement réduit ────────── */
+:focus-visible {
+  outline: 2px solid var(--honey-500);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,37 @@
+
+> frontend@0.0.0 build
+> ng build
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names                           |  Raw size | Estimated transfer size
+main-NQXIW6Q4.js    | main                            | 644.80 kB |               157.69 kB
+styles-OR4JJ7ZJ.css | styles                          |  17.51 kB |                 3.52 kB
+
+                    | Initial total                   | 662.30 kB |               161.22 kB
+
+Lazy chunk files    | Names                           |  Raw size | Estimated transfer size
+chunk-3esc8dur.js   | -                               | 182.19 kB |                30.22 kB
+chunk-DO76VKUO.js   | -                               | 123.82 kB |                24.39 kB
+chunk-CDJMoq2b.js   | -                               |  44.87 kB |                 8.99 kB
+chunk-DSljR6sO.js   | marketplace-component           |  38.53 kB |                 6.46 kB
+chunk-C7HBk9rQ.js   | -                               |  26.29 kB |                 6.50 kB
+chunk-DmWMJgn1.js   | evenement-detail-component      |  17.68 kB |                 4.41 kB
+chunk-BHGbTvlW.js   | boite-idees-component           |  15.43 kB |                 4.11 kB
+chunk-CJsKE2Dm.js   | publication-detail-component    |  15.06 kB |                 3.94 kB
+chunk-DO7uKFAf.js   | formation-list-component        |  13.93 kB |                 3.93 kB
+chunk-BoIIR1Pd.js   | publication-form-component      |  12.85 kB |                 3.84 kB
+chunk-tngUoRvV.js   | campagne-crowdfunding-component |  11.79 kB |                 3.46 kB
+chunk-Bd4SYwoW.js   | forgot-password-component       |  11.46 kB |                 2.98 kB
+chunk-BC2Q2VTJ.js   | evenement-list-component        |  11.06 kB |                 3.42 kB
+chunk-BwXOgZbe.js   | temoignages-list                |  10.55 kB |                 3.16 kB
+chunk-DnTCbPBI.js   | sondage-detail-component        |  10.23 kB |                 3.10 kB
+...and 73 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [12.858 seconds] - 2026-07-28T03:18:49.388Z
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mbundle initial exceeded maximum budget. Budget 500.00 kB was not met by 162.30 kB with a total of 662.30 kB.[0m
+
+
+Output location: C:\Users\youne\OneDrive\Desktop\Smart_Hive_mind\frontend\dist\frontend
+
