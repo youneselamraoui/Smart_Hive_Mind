@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Subscription, interval, switchMap, catchError, of } from 'rxjs';
+import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 import { ToastService } from '../../../core/toast.service';
+import { EmptyStateComponent } from '../../../core/empty-state.component';
 
 const STEP_ICONS: Record<string, string> = {
   selection: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
@@ -26,7 +27,7 @@ function iconFor(label: string): string {
 @Component({
   selector: 'app-atelier-runner',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, EmptyStateComponent],
   template: `
     <div class="page">
       <div class="page-head">
@@ -34,7 +35,9 @@ function iconFor(label: string): string {
         @if (atelier) { <p>{{ atelier.nom }}</p> }
       </div>
 
-      @if (!atelier) {
+      @if (error()) {
+        <app-empty-state icon="alert-circle" title="Atelier introuvable" [description]="error()!" actionLabel="Retour" actionRouterLink="/smart-tools/models" />
+      } @else if (!atelier) {
         <div class="loading-center">
           <div class="spin"></div>
           <span>Chargement de l'atelier…</span>
@@ -53,7 +56,7 @@ function iconFor(label: string): string {
 
           <!-- CI/CD timeline -->
           <div class="timeline">
-            @for (etape of a.etapes; track etape.index; let last = $last) {
+            @for (etape of a.etapes || []; track etape.index; let last = $last) {
               <div class="tl-step" [class]="'tl--' + etape.statut">
                 <!-- Connector line -->
                 @if (!last) {
@@ -138,7 +141,7 @@ function iconFor(label: string): string {
     .tl-node--en_cours { background: var(--agentic-500); color: var(--paper-50); animation: pulse-node 1.5s ease-in-out infinite; }
     .tl-node--en_attente { background: var(--line-200); color: var(--ink-700); }
     .tl-node-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; }
-    .tl-node-icon :deep(svg) { width: 18px; height: 18px; }
+    .tl-node-icon svg { width: 18px; height: 18px; }
     .tl-node-icon.dim { opacity: 0.4; }
     @keyframes pulse-node { 0%,100%{box-shadow:0 0 0 0 rgba(91,79,224,0.4)} 50%{box-shadow:0 0 0 8px rgba(91,79,224,0)} }
 
@@ -178,6 +181,7 @@ export class AtelierRunnerComponent implements OnInit, OnDestroy {
 
   atelier?: any;
   progressMsg = '';
+  error = signal<string | null>(null);
   private sub?: Subscription;
   private id = '';
 
@@ -185,9 +189,18 @@ export class AtelierRunnerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.id = this.route.snapshot.paramMap.get('id')!;
-    this.sub = interval(3000).pipe(
-      switchMap(() => this.http.get<any>('/api/smart-tools/ateliers/' + this.id).pipe(catchError(() => of(null)))),
-    ).subscribe(a => { if (a) this.atelier = a; });
+    this.sub = timer(0, 3000).pipe(
+      switchMap(() => this.http.get<any>('/api/smart-tools/ateliers/' + this.id).pipe(
+        catchError(() => of(null)),
+      )),
+    ).subscribe(a => {
+      if (a === null) {
+        this.error.set('Atelier introuvable ou erreur de chargement.');
+        this.sub?.unsubscribe();
+        return;
+      }
+      this.atelier = a;
+    });
   }
 
   ngOnDestroy() { this.sub?.unsubscribe(); }

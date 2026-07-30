@@ -21,7 +21,7 @@ import { ToastService } from '../../core/toast.service';
             <input class="input" [(ngModel)]="formData.titre" placeholder="Titre de votre projet" maxlength="200" />
           </div>
           <div class="field">
-            <label>Modele économique</label>
+            <label>Modèle économique</label>
             <textarea class="input input--ta" [(ngModel)]="formData.modeleEconomique" rows="6" placeholder="Décrivez votre modèle économique…"></textarea>
           </div>
           <div class="field">
@@ -33,8 +33,11 @@ import { ToastService } from '../../core/toast.service';
             <textarea class="input input--ta" [(ngModel)]="formData.previsionsFinancieres" rows="4" placeholder="Prévisions sur 3-5 ans…"></textarea>
           </div>
           <div class="field">
-            <label>Assistance IA (optionnel)</label>
-            <textarea class="input input--ta" [(ngModel)]="formData.assistanceDetails" rows="3" placeholder="Détails sur l'assistance IA souhaitée…"></textarea>
+            <label>Contenu pour l'IA</label>
+            <textarea class="input input--ta" [(ngModel)]="formData.contenuIA" rows="3" placeholder="Décrivez votre projet ou collez une ébauche, l'IA générera un business plan structuré…"></textarea>
+            <button class="btn btn-sm btn-ia" [disabled]="!formData.contenuIA?.trim() || iaLoading()" (click)="genererIA()">
+              {{ iaLoading() ? 'Génération…' : 'Générer avec l\'IA' }}
+            </button>
           </div>
           <div class="form-actions">
             <button class="btn btn-outline" (click)="router.navigate(['..'])">Annuler</button>
@@ -59,14 +62,17 @@ import { ToastService } from '../../core/toast.service';
     .field label { font-size: var(--text-sm); font-weight: 600; color: var(--ink-900); }
 
     .input { padding: 10px 14px; border: 1px solid var(--line-200); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); outline: none; background: var(--color-surface); color: var(--ink-900); transition: border-color var(--transition); }
-    .input:focus { border-color: var(--honey-500); }
+    .input:focus { border-color: var(--indigo-500); }
     .input--ta { resize: vertical; min-height: 80px; }
 
     .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: all var(--transition); }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary { background: var(--honey-500); color: var(--ink-900); }
-    .btn-primary:hover:not(:disabled) { background: var(--honey-600); }
+    .btn-sm { padding: 6px 14px; font-size: var(--text-xs); }
+    .btn-primary { background: var(--indigo-500); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--indigo-600); }
+    .btn-ia { background: var(--indigo-100); color: var(--indigo-700); border: 1px solid var(--indigo-300); align-self: flex-start; }
+    .btn-ia:hover:not(:disabled) { background: var(--indigo-200); }
     .btn-outline { background: var(--color-surface); border: 1px solid var(--line-200); color: var(--ink-900); }
     .btn-outline:hover { border-color: var(--ink-700); }
   `]
@@ -77,9 +83,10 @@ export class BusinessPlanFormComponent implements OnInit {
   private toast = inject(ToastService);
   router = inject(Router);
 
-  formData: any = { titre: '', modeleEconomique: '', budgetGlobal: null, previsionsFinancieres: '', assistanceDetails: '' };
+  formData: any = { titre: '', modeleEconomique: '', budgetGlobal: null, previsionsFinancieres: '', contenuIA: '' };
   loading = signal(true);
   submitting = signal(false);
+  iaLoading = signal(false);
   bpId: string | null = null;
 
   isEdit = () => !!this.bpId;
@@ -94,16 +101,41 @@ export class BusinessPlanFormComponent implements OnInit {
     if (id) {
       this.bpId = id;
       this.http.get<any>('/api/entrepreneuriat/business-plans/' + id).subscribe({
-        next: d => { this.formData = { titre: d.titre, modeleEconomique: d.modeleEconomique, budgetGlobal: d.budgetGlobal, previsionsFinancieres: d.previsionsFinancieres || '', assistanceDetails: d.assistanceDetails || '' }; this.loading.set(false); },
+        next: d => { this.formData = { titre: d.titre || '', modeleEconomique: d.modeleEconomique || '', budgetGlobal: d.budget, previsionsFinancieres: d.previsions || '', contenuIA: '' }; this.loading.set(false); },
         error: () => this.loading.set(false),
       });
     } else { this.loading.set(false); }
   }
 
+  genererIA() {
+    const contenu = this.formData.contenuIA?.trim();
+    if (!contenu) return;
+    this.iaLoading.set(true);
+    this.http.post<any>('/api/entrepreneuriat/business-plan/generate', {
+      contenu,
+      projetId: null,
+    }).subscribe({
+      next: (res) => {
+        this.iaLoading.set(false);
+        if (res?.businessPlan?.assistanceDetails) {
+          const iaSegments = res.businessPlan.assistanceDetails.filter((s: any) => s.source === 'ia');
+          if (iaSegments.length) {
+            this.formData.modeleEconomique = (this.formData.modeleEconomique + '\n\n--- Assistance IA ---\n' + iaSegments.map((s: any) => s.segment).join('\n\n')).trim();
+          }
+        }
+        this.toast.success('Contenu généré par l\'IA.');
+      },
+      error: (err) => {
+        this.iaLoading.set(false);
+        this.toast.error(err.error?.error || 'Erreur lors de la génération IA.');
+      },
+    });
+  }
+
   save() {
     if (!this.valid()) return;
     this.submitting.set(true);
-    const body = { ...this.formData };
+    const body = { titre: this.formData.titre, modeleEconomique: this.formData.modeleEconomique, budgetGlobal: this.formData.budgetGlobal, previsionsFinancieres: this.formData.previsionsFinancieres };
     const req = this.bpId
       ? this.http.put<any>('/api/entrepreneuriat/business-plans/' + this.bpId, body)
       : this.http.post<any>('/api/entrepreneuriat/business-plans', body);

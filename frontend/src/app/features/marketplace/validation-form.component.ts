@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -65,13 +66,16 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline-sm { padding: 6px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--color-text-secondary); text-decoration: none; }
   `]
 })
-export class ValidationFormComponent implements OnInit {
+export class ValidationFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   public router = inject(Router);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
 
   loading = signal(false);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   form = this.fb.nonNullable.group({
     missionId: ['', Validators.required],
@@ -91,7 +95,7 @@ export class ValidationFormComponent implements OnInit {
       commentaire: this.form.value.commentaire,
       competence: this.form.value.resultat === 'valide' ? 'valide' : 'a_ameliorer',
     };
-    this.http.post('/api/placements/cloturer', payload).subscribe({
+    this.http.post('/api/placements/cloturer', payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Validation soumise avec succès'); this.router.navigate(['/marketplace/validations']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur lors de l\'enregistrement'); },
     });

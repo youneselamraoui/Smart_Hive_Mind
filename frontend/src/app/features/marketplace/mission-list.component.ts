@@ -44,19 +44,19 @@ function arcGauge(pct: number): string {
       } @else {
         <div class="grid">
           @for (m of paginatedItems(); track m._id) {
-            <a class="card" [routerLink]="'/marketplace/missions/' + m._id">
+            <div class="card">
               <h3>{{ m.titre }}</h3>
               <p>{{ (m.description || '').length > 100 ? (m.description | slice:0:100) + '…' : m.description }}</p>
               <div class="card-footer">
                 <div class="card-meta">
-                  <span class="budget">{{ m.budget | number }} FCFA</span>
-                  <span class="deadline">Limite: {{ m.dateLimite | date:'dd/MM/yyyy' }}</span>
+                  <span class="budget">{{ (m.budget || 0) | number }} FCFA</span>
+                  <span class="deadline">Limite: {{ (m.dateLimite | date:'dd/MM/yyyy') || 'Non renseignée' }}</span>
                 </div>
                 @if (m.matchingScore !== undefined) {
                   <div class="match-gauge" [innerHTML]="arcGauge(m.matchingScore * 100)"></div>
                 }
               </div>
-            </a>
+            </div>
           }
         </div>
       }}

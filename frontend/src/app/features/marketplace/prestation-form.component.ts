@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { ToastService } from '../../core/toast.service';
@@ -68,12 +69,13 @@ import { ICONS } from '../../core/icons';
     .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
   `]
 })
-export class PrestationFormComponent implements OnInit {
+export class PrestationFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private destroy$ = new Subject<void>();
   protected readonly ICONS = ICONS;
   submitting = signal(false);
   isEdit = signal(false);
@@ -82,15 +84,17 @@ export class PrestationFormComponent implements OnInit {
 
   form = this.fb.nonNullable.group({
     description: ['', Validators.required],
-    tarif: [0, [Validators.required, Validators.min(0)]],
+    tarif: [0, [Validators.required, Validators.min(1)]],
   });
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit.set(true);
       this.editId = id;
-      this.http.get<any>('/api/prestations/' + id).subscribe({
+      this.http.get<any>('/api/prestations/' + id).pipe(takeUntil(this.destroy$)).subscribe({
         next: p => this.form.patchValue({ description: p.description, tarif: p.tarif }),
         error: () => this.router.navigate(['/marketplace']),
       });
@@ -103,12 +107,11 @@ export class PrestationFormComponent implements OnInit {
     this.submitting.set(true);
     const payload = {
       ...this.form.getRawValue(),
-      prestataireId: this.membreId,
       clientId: this.membreId,
     };
 
     if (this.isEdit() && this.editId) {
-      this.http.put<any>('/api/prestations/' + this.editId, payload).subscribe({
+      this.http.put<any>('/api/prestations/' + this.editId, payload).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.toast.success('Prestation modifiée.');
           this.router.navigate(['/marketplace']);
@@ -116,7 +119,7 @@ export class PrestationFormComponent implements OnInit {
         error: err => { this.submitting.set(false); this.toast.error(err.error?.error || 'Erreur modification.'); },
       });
     } else {
-      this.http.post<any>('/api/prestations', payload).subscribe({
+      this.http.post<any>('/api/prestations', payload).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.toast.success('Prestation créée.');
           this.router.navigate(['/marketplace']);

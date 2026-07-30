@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 const BADGE_ICONS: Record<string, string> = {
@@ -36,7 +37,10 @@ const BADGE_COLORS: Record<string, { bg: string; fg: string }> = {
             <form [formGroup]="form" (ngSubmit)="save()">
               <div class="field">
                 <label>ID Utilisateur</label>
-                <input type="text" formControlName="utilisateurId" placeholder="ID du membre" />
+                <input type="text" formControlName="utilisateurId" placeholder="ID du membre (24 caractères hex)" />
+                @if (form.get('utilisateurId')?.invalid && form.get('utilisateurId')?.touched) {
+                  <small class="field-error">L'ID doit être un ObjectId valide (24 caractères hexadécimaux).</small>
+                }
               </div>
               <div class="field">
                 <label>Type de badge</label>
@@ -131,9 +135,12 @@ export class BadgeAttribuerComponent {
   private toast = inject(ToastService);
   router = inject(Router);
   loading = signal(false);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   form = this.fb.nonNullable.group({
-    utilisateurId: ['', Validators.required],
+    utilisateurId: ['', [Validators.required, Validators.pattern(/^[0-9a-fA-F]{24}$/)]],
     badgeType: ['', Validators.required],
     justification: [''],
   });
@@ -149,9 +156,9 @@ export class BadgeAttribuerComponent {
   save() {
     if (this.form.invalid) return;
     this.loading.set(true);
-    this.http.post('/api/badges/attribuer', this.form.value).subscribe({
+    this.http.post('/api/badges/attribuer', this.form.value).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Badge attribué.'); this.router.navigate(['/admin/badges']); },
-      error: () => { this.loading.set(false); this.toast.error('Erreur.'); },
+      error: err => { this.loading.set(false); this.toast.error(err.error?.error || 'Erreur lors de l\'attribution.'); },
     });
   }
 }

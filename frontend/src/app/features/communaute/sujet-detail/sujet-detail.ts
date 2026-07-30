@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../../core/toast.service';
 
 function identiconSvg(id: string, name: string): string {
@@ -138,7 +139,7 @@ function identiconSvg(id: string, name: string): string {
     @media (max-width: 600px) { .thread-reply:not(.reply--op) { margin-left: 10px; } }
   `]
 })
-export class SujetDetailComponent implements OnInit {
+export class SujetDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
@@ -146,12 +147,20 @@ export class SujetDetailComponent implements OnInit {
 
   sujet = signal<any>(null);
   loading = signal(false);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
   form = this.fb.nonNullable.group({ contenu: ['', Validators.required] });
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
-    this.http.get<any>('/api/communaute/sujets/' + id).subscribe(s => this.sujet.set(s));
+    this.loading.set(true);
+    this.http.get<any>('/api/communaute/sujets/' + id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: s => this.sujet.set(s),
+      error: () => { this.loading.set(false); this.toast.error('Sujet introuvable.'); },
+      complete: () => this.loading.set(false),
+    });
   }
 
   identicon(id: string, name: string): string {
@@ -169,7 +178,7 @@ export class SujetDetailComponent implements OnInit {
     this.http.post('/api/communaute/discussions', {
       sujetId: s._id,
       contenu: this.form.value.contenu,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (d: any) => {
         s.discussions = [...(s.discussions || []), d];
         this.sujet.set({ ...s });

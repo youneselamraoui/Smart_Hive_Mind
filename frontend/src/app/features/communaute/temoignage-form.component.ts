@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -23,19 +24,8 @@ import { ToastService } from '../../core/toast.service';
             <input class="input" type="text" formControlName="titre" placeholder="Titre du témoignage" />
           </div>
           <div class="field">
-            <label>Message</label>
-            <textarea class="input input--ta" formControlName="message" rows="6" placeholder="Partagez votre expérience…"></textarea>
-          </div>
-          <div class="field">
-            <label>Note</label>
-            <select class="input input--sel" formControlName="note">
-              <option value="">Sélectionner</option>
-              <option value="5">5 - Très satisfait</option>
-              <option value="4">4 - Satisfait</option>
-              <option value="3">3 - Neutre</option>
-              <option value="2">2 - Insatisfait</option>
-              <option value="1">1 - Très insatisfait</option>
-            </select>
+            <label>Contenu</label>
+            <textarea class="input input--ta" formControlName="contenu" rows="6" placeholder="Partagez votre expérience…"></textarea>
           </div>
           <div class="field">
             <label>Tags (optionnel, séparés par des virgules)</label>
@@ -77,10 +67,12 @@ export class TemoignageFormComponent {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   loading = signal(false);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
   form = this.fb.nonNullable.group({
     titre: ['', Validators.required],
-    message: ['', Validators.required],
-    note: ['', Validators.required],
+    contenu: ['', Validators.required],
     tags: [''],
   });
 
@@ -89,12 +81,11 @@ export class TemoignageFormComponent {
     this.loading.set(true);
     this.http.post('/api/communaute/temoignages', {
       titre: this.form.value.titre,
-      message: this.form.value.message,
-      note: parseInt(this.form.value.note!, 10),
+      contenu: this.form.value.contenu,
       tags: this.form.value.tags ? this.form.value.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Témoignage publié'); this.router.navigate(['/communaute/temoignages']); },
-      error: () => { this.loading.set(false); this.toast.error('Erreur'); },
+      error: err => { this.loading.set(false); this.toast.error(err.error?.error || 'Erreur lors de la publication'); },
     });
   }
 }

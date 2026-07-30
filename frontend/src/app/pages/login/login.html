@@ -1,9 +1,9 @@
 <div class="auth-page" @fadeInUp>
   <div class="auth-form-col">
     <div class="auth-form-container">
-      <a routerLink="/" class="auth-logo">
-        <svg viewBox="0 0 48 48" fill="none" width="36" height="36">
-          <polygon points="24 3 43 16 43 32 24 45 5 32 5 16" stroke="var(--honey-500)" stroke-width="1.5" fill="none" />
+      <a routerLink="/" class="auth-logo" aria-label="Accueil Smart Hive Mind">
+        <svg viewBox="0 0 48 48" fill="none" width="36" height="36" aria-hidden="true">
+          <polygon points="24 3 43 16 43 32 24 45 5 32 5 16" stroke="var(--indigo-500)" stroke-width="1.5" fill="none" />
           <text x="24" y="30" text-anchor="middle" font-family="Fraunces,serif" font-size="16" font-weight="700" fill="var(--ink-900)">SHM</text>
         </svg>
       </a>
@@ -13,30 +13,65 @@
         <p>Accédez à votre espace Smart Hive Mind</p>
       </div>
 
-      <form (ngSubmit)="login()" class="auth-form">
+      <form (ngSubmit)="login()" class="auth-form" novalidate>
         <div class="field">
-          <label for="email">Email</label>
-          <input id="email" type="email" [(ngModel)]="email" name="email" placeholder="vous@email.com" autocomplete="email" required />
+          <label for="email">Adresse email</label>
+          <input
+            id="email"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="vous@email.com"
+            autocomplete="email"
+            required
+            [class.field--invalid]="emailInvalid"
+            aria-required="true"
+            aria-describedby="email-error" />
+          @if (emailInvalid) {
+            <span id="email-error" class="field-msg field-msg--error" role="alert">
+              Adresse email invalide.
+            </span>
+          }
         </div>
 
         <div class="field">
           <label for="password">Mot de passe</label>
-          <input id="password" type="password" [(ngModel)]="password" name="password" placeholder="••••••••" autocomplete="current-password" required />
+          <input
+            id="password"
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+            minlength="6"
+            [class.field--invalid]="passwordInvalid"
+            aria-required="true"
+            aria-describedby="password-error" />
+          @if (passwordInvalid) {
+            <span id="password-error" class="field-msg field-msg--error" role="alert">
+              Le mot de passe doit contenir au moins 6 caractères.
+            </span>
+          }
         </div>
 
         <div class="field-actions">
           <a routerLink="/forgot-password">Mot de passe oublié ?</a>
         </div>
 
-        @if (error) {
-          <div class="field-error">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        @if (error && !loading) {
+          <div class="field-error" role="alert">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
             {{ error }}
           </div>
         }
 
-        <button type="submit" class="btn btn-primary" [disabled]="!email || !password || loading">
-          @if (loading) { <span class="spinner" [innerHTML]="ICONS.spinner"></span> }
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          @if (loading) {
+            <span class="spinner" aria-hidden="true"></span>
+          }
           <span>{{ loading ? 'Connexion…' : 'Se connecter' }}</span>
         </button>
       </form>
@@ -47,29 +82,50 @@
     </div>
   </div>
 
-  <div class="auth-panel-col">
+  <div class="auth-panel-col" aria-hidden="true">
     <div class="auth-panel-bg"></div>
     <div class="auth-panel-content">
       <blockquote class="auth-tagline">
-        « La confiance ne se déclare pas,<br>elle se prouve. »
+        « La confiance ne se déclare pas,<br />elle se prouve. »
       </blockquote>
 
       <div class="proof-feed">
-        <div class="proof-line">
-          <span class="proof-dot proof-dot--verify"></span>
-          <span class="proof-mono">0x9f2a…ancré</span>
-          <span class="proof-time">• il y a 4s</span>
+        <div class="proof-toast">
+          <span class="proof-toast__icon proof-toast__icon--anchored" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          <span class="proof-toast__label">Hash ancré sur blockchain</span>
+          <span class="proof-toast__meta">0x9f2a…8e3b • 4s</span>
         </div>
-        <div class="proof-line">
-          <span class="proof-dot proof-dot--honey"></span>
-          <span class="proof-mono">Profil certifié mis à jour</span>
-          <span class="proof-time">• il y a 23s</span>
+        <div class="proof-toast">
+          <span class="proof-toast__icon proof-toast__icon--certified" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </span>
+          <span class="proof-toast__label">Profil certifié mis à jour</span>
+          <span class="proof-toast__meta">il y a 23s</span>
         </div>
-        <div class="proof-line">
-          <span class="proof-dot proof-dot--agentic"></span>
-          <span class="proof-mono">Publication évaluée</span>
-          <span class="proof-score">8.4/10</span>
-          <span class="proof-time">• il y a 1m</span>
+        <div class="proof-toast">
+          <span class="proof-toast__icon proof-toast__icon--evaluated" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </span>
+          <span class="proof-toast__label">Publication évaluée</span>
+          <span class="proof-toast__score">8.4/10</span>
+          <span class="proof-toast__meta">• il y a 1m</span>
+        </div>
+        <div class="proof-toast">
+          <span class="proof-toast__icon proof-toast__icon--validated" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+          <span class="proof-toast__label">Mission validée — 3 compétences</span>
+          <span class="proof-toast__meta">il y a 12m</span>
         </div>
       </div>
     </div>

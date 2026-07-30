@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -94,6 +95,9 @@ export class GenerateContentComponent {
   router = inject(Router);
   loading = signal(false);
   result = signal<string | null>(null);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   form = this.fb.nonNullable.group({
     prompt: ['', Validators.required],
@@ -105,7 +109,7 @@ export class GenerateContentComponent {
     if (this.form.invalid) return;
     this.loading.set(true);
     this.result.set(null);
-    this.http.post<{ contenu: string }>('/api/ai/generate-content', this.form.value).subscribe({
+    this.http.post<{ contenu: string }>('/api/ai/generate-content', this.form.value).pipe(takeUntil(this.destroy$)).subscribe({
       next: res => { this.result.set(res.contenu); this.loading.set(false); this.toast.success('Contenu généré.'); },
       error: () => { this.loading.set(false); this.toast.error('Erreur.'); },
     });

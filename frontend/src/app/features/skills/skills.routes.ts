@@ -30,4 +30,10 @@ export const skillsRoutes: Routes = [
       import('./mentorat-accepter.component').then(m => m.MentoratAccepterComponent),
     title: 'Accepter un mentorat',
   },
+  {
+    path: 'mentorats/demander',
+    loadComponent: () =>
+      import('./mentorat-demand.component').then(m => m.MentoratDemandComponent),
+    title: 'Demander un mentor',
+  },
 ];

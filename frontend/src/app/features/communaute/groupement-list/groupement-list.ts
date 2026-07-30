@@ -81,7 +81,11 @@ function patternFor(name: string): string {
                     {{ g.nbMembres || 0 }} membre{{ g.nbMembres > 1 ? 's' : '' }}
                   </span>
                 </div>
-                <button class="btn btn-outline btn-sm" (click)="rejoindre(g)">Rejoindre</button>
+                @if (estMembre(g)) {
+                  <button class="btn btn-outline btn-sm" disabled>Déjà membre</button>
+                } @else {
+                  <button class="btn btn-outline btn-sm" (click)="rejoindre(g)">Rejoindre</button>
+                }
               </div>
             </div>
           }
@@ -157,10 +161,15 @@ export class GroupementListComponent implements OnInit {
   showForm = signal(false);
   submitting = signal(false);
   newNom = ''; newTheme = ''; newDescription = ''; newRegles = '';
+  membreId = localStorage.getItem('membreId') || '';
 
   patternFor = patternFor;
 
   ngOnInit() { this.load(); }
+
+  estMembre(g: any): boolean {
+    return g.membres?.some((m: any) => (m._id || m) === this.membreId) || false;
+  }
 
   private load() {
     this.loading.set(true);

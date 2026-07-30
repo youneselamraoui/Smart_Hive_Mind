@@ -18,12 +18,12 @@ import { DecimalPipe, DatePipe } from '@angular/common';
       } @else {
         <div class="grid">
           @for (bp of list(); track bp._id) {
-            <a class="card" [routerLink]="bp._id">
+            <a class="card" [routerLink]="['/app/entrepreneuriat', 'business-plans', bp._id]">
               <div class="card-head">
                 <h3>{{ bp.titre }}</h3>
                 <span class="card-date">{{ bp.createdAt | date:'dd MMM yyyy' }}</span>
               </div>
-              <div class="budget">{{ bp.budgetGlobal | number:'1.0-0' }} <span>FCFA</span></div>
+              <div class="budget">{{ (bp.budget ?? 0) | number:'1.0-0' }} <span>FCFA</span></div>
               <p class="model">{{ truncate(bp.modeleEconomique, 120) }}</p>
               <div class="card-foot">
                 @if (bp.assistanceDetails?.length) {

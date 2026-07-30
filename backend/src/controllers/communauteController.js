@@ -5,6 +5,15 @@ const Sondage = require("../models/Sondage");
 const Temoignage = require("../models/Temoignage");
 const Groupement = require("../models/Groupement");
 
+exports.listThematiques = async (req, res) => {
+    try {
+        const items = await Thematique.find().select("nom forumId").populate("forumId", "nom").sort({ nom: 1 });
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne." });
+    }
+};
+
 exports.createSujet = async (req, res) => {
     try {
         const thematique = await Thematique.findById(req.body.thematiqueId);
@@ -59,25 +68,37 @@ exports.addDiscussion = async (req, res) => {
 exports.listSujetsByThematique = async (req, res) => {
     try {
         const { thematiqueId, page, limit } = req.query;
-        const thematique = await Thematique.findById(thematiqueId)
-            .populate({
-                path: "sujets",
-                options: {
-                    sort: { createdAt: -1 },
-                    skip: (page - 1) * limit,
-                    limit: Number(limit),
-                },
-                populate: {
-                    path: "auteurId",
-                    select: "nom prenom",
-                },
-            });
-        if (!thematique) {
-            return res.status(404).json({ error: "Thematique introuvable." });
+        let sujets, total;
+        if (thematiqueId) {
+            const thematique = await Thematique.findById(thematiqueId)
+                .populate({
+                    path: "sujets",
+                    options: {
+                        sort: { createdAt: -1 },
+                        skip: (page - 1) * limit,
+                        limit: Number(limit),
+                    },
+                    populate: {
+                        path: "auteurId",
+                        select: "nom prenom",
+                    },
+                });
+            if (!thematique) {
+                return res.status(404).json({ error: "Thematique introuvable." });
+            }
+            sujets = thematique.sujets;
+            total = await Sujet.countDocuments({ thematiqueId });
+        } else {
+            sujets = await Sujet.find()
+                .populate("auteurId", "nom prenom")
+                .populate("thematiqueId", "nom")
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(Number(limit));
+            total = await Sujet.countDocuments();
         }
-        const total = await Sujet.countDocuments({ thematiqueId });
         res.json({
-            sujets: thematique.sujets,
+            sujets,
             pagination: {
                 page: Number(page),
                 limit: Number(limit),

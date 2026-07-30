@@ -1,0 +1,322 @@
+/* ════════════════════════════════════════════════════════════════════════
+   Smart Hive Mind — Design Tokens
+   ────────────────────────────────────────────────────────────────────────
+   Usage : importé dans angular.json (avant styles.css).
+   Toute variable CSS utilisable dans n'importe quel composant via
+   var(--token-name).
+
+   Palette : Indigo confidentiel  →  confiance, blockchain, hex-seal
+   Neutres  : Ink (textes, fonds sombres) / Paper (fonds clairs)
+   Sémantique : Success / Warning / Error / Info
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ══════════════════════════════════════════════════════════════════════
+     PALETTE PRIMAIRE — Indigo
+     Teinte signature : #5B4FE0 (indigo-500)
+     ══════════════════════════════════════════════════════════════════════ */
+  --indigo-50:   #EEEDFF;
+  --indigo-100:  #D0CEFF;
+  --indigo-200:  #A9A5FF;
+  --indigo-300:  #7C77FF;
+  --indigo-400:  #6360F0;
+  --indigo-500:  #5B4FE0;  /* accent principal */
+  --indigo-600:  #4C40CD;
+  --indigo-700:  #3D33A8;
+  --indigo-800:  #2F2783;
+  --indigo-900:  #201B5E;
+  --indigo-950:  #120F3A;
+
+  /* ── Rétrocompatibilité ───────────────────────────────────────────── */
+  --honey-500:           var(--indigo-500);
+  --honey-600:           var(--indigo-600);
+  --agentic-500:         var(--indigo-500);
+  --color-primary-blue:  var(--indigo-500);
+  --color-deep-blue:     var(--ink-900);
+  --color-sky-blue:      var(--indigo-300);
+  --color-sky-blue-light: var(--indigo-50);
+  --color-cream:         var(--paper-100);
+  --color-cream-light:   var(--paper-50);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     COULEURS SÉMANTIQUES
+     Chacune avec nuances 50-700 pour fonds, textes, bordures, icônes.
+     ══════════════════════════════════════════════════════════════════════ */
+  /* ── Succès (vert) ──────────────────────────────────────────────── */
+  --success-50:  #ECFDF5;
+  --success-100: #D1FAE5;
+  --success-200: #A7F3D0;
+  --success-300: #6EE7B7;
+  --success-400: #34D399;
+  --success-500: #1F9E6D;
+  --success-600: #178556;
+  --success-700: #0F6B47;
+
+  /* ── Alerte / Avertissement (ambre) ────────────────────────────── */
+  --warning-50:  #FFFBEB;
+  --warning-100: #FEF3C7;
+  --warning-200: #FDE68A;
+  --warning-300: #FCD34D;
+  --warning-400: #FBBF24;
+  --warning-500: #D97706;
+  --warning-600: #B45309;
+  --warning-700: #92400E;
+
+  /* ── Erreur / Danger (rouge) ────────────────────────────────────── */
+  --error-50:  #FEF2F2;
+  --error-100: #FEE2E2;
+  --error-200: #FECACA;
+  --error-300: #FCA5A5;
+  --error-400: #F87171;
+  --error-500: #C4432E;
+  --error-600: #A33624;
+  --error-700: #822A1C;
+
+  /* ── Information (bleu distinct du primaire) ───────────────────── */
+  --info-50:  #EFF6FF;
+  --info-100: #DBEAFE;
+  --info-200: #BFDBFE;
+  --info-300: #93C5FD;
+  --info-400: #60A5FA;
+  --info-500: #3B82F6;
+  --info-600: #2563EB;
+  --info-700: #1D4ED8;
+
+  /* ── Rétrocompatibilité sémantique ──────────────────────────────── */
+  --verify-500: var(--success-500);
+  --alert-500:  var(--error-500);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     NEUTRES — Ink (textes/fonds sombres) & Paper (fonds clairs) & Line (bordures)
+     ══════════════════════════════════════════════════════════════════════ */
+  --ink-950: #07080D;
+  --ink-900: #10131F;
+  --ink-800: #1A1D2E;
+  --ink-700: #2A2F45;
+  --ink-600: #3D435C;
+  --ink-500: #545A74;
+  --ink-400: #6E7491;
+  --ink-300: #8B91AC;
+  --ink-200: #A9AEC6;
+  --ink-100: #C8CCDF;
+  --ink-50:  #E8EAF2;
+
+  --paper-50:  #F6F5F2;
+  --paper-100: #EDEBE4;
+  --paper-200: #E0DDD4;
+
+  --line-100: rgba(16, 19, 31, 0.06);
+  --line-200: rgba(16, 19, 31, 0.10);
+  --line-300: rgba(16, 19, 31, 0.16);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     SURFACES & TEXTE — alias sémantiques pour usage dans les composants
+     ══════════════════════════════════════════════════════════════════════ */
+  --color-bg:             var(--paper-50);
+  --color-surface:        #FFFFFF;
+  --color-surface-hover:  var(--paper-100);
+  --color-card:           #FFFFFF;
+  --color-card-hover:     var(--paper-100);
+
+  --color-text:            var(--ink-900);
+  --color-text-secondary:  var(--ink-500);
+  --color-text-tertiary:   var(--ink-300);
+  --color-text-disabled:   var(--ink-200);
+
+  --color-border:         var(--line-200);
+  --color-border-strong:  var(--line-300);
+
+  --color-success: var(--success-500);
+  --color-warning: var(--warning-500);
+  --color-error:   var(--error-500);
+  --color-info:    var(--info-500);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     TYPOGRAPHIE — Polices
+     ══════════════════════════════════════════════════════════════════════ */
+  --font-heading: 'Fraunces', 'Georgia', 'Times New Roman', serif;
+  --font-display: var(--font-heading);  /* alias — rétrocompatibilité */
+  --font-body:    'IBM Plex Sans', 'Inter', -apple-system, BlinkMacSystemFont,
+                   'Segoe UI', Roboto, sans-serif;
+  --font-mono:    'IBM Plex Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* ── Corps de texte (application) ─────────────────────────────────── */
+  --text-xs:   0.70rem;   /* 11px — métriques, badges, timestamps */
+  --text-sm:   0.80rem;   /* 13px — labels, légendes */
+  --text-base: 0.92rem;   /* 15px — corps de texte par défaut */
+  --text-lg:   1.05rem;   /* 17px — texte large */
+  --text-xl:   1.25rem;   /* 20px — sous-titres, cartes */
+  --text-2xl:  1.50rem;   /* 24px — titres de section */
+  --text-3xl:  1.85rem;   /* 30px — titres de page */
+
+  /* ── Titres marketing (landing page, hero) ──────────────────────────── */
+  --text-4xl:   2.25rem;  /* 36px — rétrocompatibilité */
+  --text-hero:  3.25rem;  /* 52px — hero principal */
+  --text-display: 2.50rem; /* 40px — grands titres de section */
+  --text-feature: 1.75rem; /* 28px — titres de feature */
+
+  /* ── Line-height ──────────────────────────────────────────────────── */
+  --leading-tight:   1.15;
+  --leading-snug:    1.35;
+  --leading-normal:  1.60;
+  --leading-relaxed: 1.75;
+
+  /* ── Letter-spacing ───────────────────────────────────────────────── */
+  --tracking-tight:  -0.01em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.03em;
+
+  /* ── Font-weight ──────────────────────────────────────────────────── */
+  --font-weight-normal:   400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ESPACEMENT — échelle 4/8/12/16/24/32/48
+     ══════════════════════════════════════════════════════════════════════ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     RAYONS DE BORDURE
+     ══════════════════════════════════════════════════════════════════════ */
+  --radius-sm:   4px;
+  --radius-md:   8px;    /* valeur par défaut — boutons, inputs, cartes */
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px; /* badges, avatars, toggles */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     OMBRES
+     ══════════════════════════════════════════════════════════════════════ */
+  --shadow-xs:   0 1px 2px rgba(16, 19, 31, 0.04);
+  --shadow-sm:   0 1px 3px rgba(16, 19, 31, 0.06);
+  --shadow-md:   0 4px 12px rgba(16, 19, 31, 0.07);
+  --shadow-lg:   0 8px 24px rgba(16, 19, 31, 0.10);
+  --shadow-xl:   0 12px 40px rgba(16, 19, 31, 0.12);
+  --shadow-card: var(--shadow-sm);
+  --shadow-dropdown: var(--shadow-md);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     TRANSITIONS
+     ══════════════════════════════════════════════════════════════════════ */
+  --transition-fast:   120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition:        200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     LAYOUT — barres latérale, haute, basse
+     ══════════════════════════════════════════════════════════════════════ */
+  --sidebar-bg:             var(--ink-900);
+  --sidebar-text:           var(--ink-100);
+  --sidebar-text-active:    #FFFFFF;
+  --sidebar-accent:         var(--indigo-400);
+  --sidebar-width:          64px;
+  --sidebar-width-expanded: 220px;
+  --topbar-height:          56px;
+  --bottom-nav-height:      64px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   THÈME SOMBRE — data-theme="dark"
+   ════════════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  /* ── Primaire ────────────────────────────────────────────────────── */
+  --indigo-500: #7C77FF;
+  --indigo-600: #6360F0;
+
+  /* ── Sémantique ──────────────────────────────────────────────────── */
+  --success-50:  #022C22;
+  --success-100: #064E3B;
+  --success-200: #065F46;
+  --success-300: #047857;
+  --success-400: #059669;
+  --success-500: #34D399;
+  --success-600: #6EE7B7;
+  --success-700: #A7F3D0;
+
+  --warning-50:  #451A03;
+  --warning-100: #78350F;
+  --warning-200: #92400E;
+  --warning-300: #B45309;
+  --warning-400: #D97706;
+  --warning-500: #FBBF24;
+  --warning-600: #FCD34D;
+  --warning-700: #FDE68A;
+
+  --error-50:  #450A0A;
+  --error-100: #7F1D1D;
+  --error-200: #991B1B;
+  --error-300: #B91C1C;
+  --error-400: #DC2626;
+  --error-500: #F87171;
+  --error-600: #FCA5A5;
+  --error-700: #FECACA;
+
+  --info-50:  #172554;
+  --info-100: #1E3A5F;
+  --info-200: #1E40AF;
+  --info-300: #2563EB;
+  --info-400: #3B82F6;
+  --info-500: #60A5FA;
+  --info-600: #93C5FD;
+  --info-700: #BFDBFE;
+
+  /* ── Neutres ──────────────────────────────────────────────────────── */
+  --ink-900: #07080D;
+  --ink-800: #10131F;
+  --ink-700: #1A1D2E;
+  --ink-600: #23273C;
+  --ink-500: #3D435C;
+
+  --paper-50:  #0E0F1A;
+  --paper-100: #1A1D2E;
+  --paper-200: #23273C;
+
+  --line-100: rgba(246, 245, 242, 0.04);
+  --line-200: rgba(246, 245, 242, 0.08);
+  --line-300: rgba(246, 245, 242, 0.14);
+
+  /* ── Surfaces & texte ────────────────────────────────────────────── */
+  --color-bg:             var(--ink-800);
+  --color-surface:        var(--ink-700);
+  --color-surface-hover:  var(--ink-600);
+  --color-card:           var(--ink-700);
+  --color-card-hover:     var(--ink-600);
+
+  --color-text:            var(--paper-50);
+  --color-text-secondary:  var(--ink-300);
+  --color-text-tertiary:   var(--ink-500);
+  --color-text-disabled:   var(--ink-600);
+
+  --color-border:        var(--line-200);
+  --color-border-strong: var(--line-300);
+
+  /* ── Ombres (plus marquées en dark) ──────────────────────────────── */
+  --shadow-xs:   0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-xl:   0 12px 40px rgba(0, 0, 0, 0.50);
+  --shadow-card: var(--shadow-sm);
+  --shadow-dropdown: var(--shadow-md);
+
+  /* ── Sidebar ──────────────────────────────────────────────────────── */
+  --sidebar-bg:          var(--ink-950);
+  --sidebar-text:        var(--ink-300);
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-accent:      var(--indigo-400);
+
+  /* ── Rétrocompatibilité dark ──────────────────────────────────────── */
+  --color-sky-blue: var(--indigo-300);
+  --color-sky-blue-light: rgba(91, 79, 224, 0.10);
+  --color-cream: var(--paper-100);
+  --color-cream-light: rgba(255, 255, 255, 0.04);
+}

@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -65,11 +66,12 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline-sm { padding: 6px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--color-text-secondary); text-decoration: none; }
   `]
 })
-export class CampagneFormComponent {
+export class CampagneFormComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   public router = inject(Router);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private destroy$ = new Subject<void>();
 
   loading = signal(false);
 
@@ -80,6 +82,8 @@ export class CampagneFormComponent {
     dateFin: ['', Validators.required],
   });
 
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
   save() {
     if (this.form.invalid) return;
     this.loading.set(true);
@@ -89,7 +93,7 @@ export class CampagneFormComponent {
       description: this.form.value.description,
       objectif: this.form.value.objectif,
       dateFin: this.form.value.dateFin,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Campagne créée avec succès'); this.router.navigate(['/crowdfunding']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur lors de l\'enregistrement'); },
     });

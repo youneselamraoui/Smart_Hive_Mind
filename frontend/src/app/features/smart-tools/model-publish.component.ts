@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -23,31 +24,33 @@ import { ToastService } from '../../core/toast.service';
             <input class="input" type="text" formControlName="nom" placeholder="Ex: ResNet-50" />
           </div>
           <div class="field">
-            <label>Description</label>
-            <textarea class="input input--ta" formControlName="description" rows="4" placeholder="Décrivez le modèle et son usage…"></textarea>
+            <label>Tâche</label>
+            <textarea class="input input--ta" formControlName="tache" rows="4" placeholder="Décrivez la tâche du modèle…"></textarea>
           </div>
           <div class="field">
             <label>Version</label>
             <input class="input" type="text" formControlName="version" placeholder="Ex: 1.0.0" />
           </div>
           <div class="field">
-            <label>Type</label>
-            <select class="input input--sel" formControlName="type">
-              <option value="">Sélectionner</option>
-              <option value="classification">Classification</option>
-              <option value="regression">Régression</option>
-              <option value="nlp">NLP</option>
-              <option value="vision">Vision</option>
-              <option value="other">Autre</option>
+            <label>Performance (précision)</label>
+            <input class="input" type="number" formControlName="performance" placeholder="Ex: 0.95" step="0.01" min="0" max="1" />
+          </div>
+          <div class="field">
+            <label>Jeu de données source</label>
+            <select class="input input--sel" formControlName="jeuDeDonneesId">
+              <option value="">— Aucun —</option>
+              @for (ds of datasets(); track ds._id) {
+                <option [value]="ds._id">{{ ds.nom }}@if (ds.domaine) { ({{ ds.domaine }}) }</option>
+              }
             </select>
           </div>
           <div class="field">
-            <label>Framework</label>
-            <input class="input" type="text" formControlName="framework" placeholder="Ex: PyTorch, TensorFlow" />
+            <label>Fichier du modèle</label>
+            <input class="input" type="file" (change)="onFileSelected($event)" accept=".zip,.tar.gz,.pt,.h5,.onnx,.json" />
           </div>
           <div class="field">
-            <label>URL du modèle</label>
-            <input class="input" type="url" formControlName="url" placeholder="https://huggingface.co/…" />
+            <label>URL d'explicabilité</label>
+            <input class="input" type="url" formControlName="explicabiliteUrl" placeholder="https://…" />
           </div>
           <div class="form-actions">
             <button type="button" class="btn btn-outline" (click)="router.navigate(['/smart-tools/models'])">Annuler</button>
@@ -79,29 +82,57 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline:hover { border-color: var(--ink-700); }
   `]
 })
-export class ModelPublishComponent implements OnInit {
+export class ModelPublishComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   public router = inject(Router);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   loading = signal(false);
+  datasets = signal<any[]>([]);
+  selectedFile: File | null = null;
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
   form = this.fb.nonNullable.group({
     nom: ['', Validators.required],
-    description: ['', Validators.required],
+    tache: ['', Validators.required],
     version: [''],
-    type: [''],
-    framework: [''],
-    url: [''],
+    performance: [''],
+    jeuDeDonneesId: [''],
+    explicabiliteUrl: [''],
   });
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.http.get<any[]>('/api/smart-tools/datasets').pipe(takeUntil(this.destroy$)).subscribe({
+      next: list => this.datasets.set(list),
+    });
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
 
   save() {
     if (this.form.invalid) return;
+    if (!this.selectedFile) { this.toast.error('Veuillez sélectionner un fichier.'); return; }
     this.loading.set(true);
-    this.http.post('/api/smart-tools/models', this.form.value).subscribe({
+
+    const v = this.form.value;
+    const fd = new FormData();
+    fd.append('nom', v.nom!);
+    fd.append('tache', v.tache!);
+    fd.append('version', v.version || '');
+    if (v.performance) fd.append('performance', JSON.stringify({ accuracy: parseFloat(v.performance) }));
+    if (v.jeuDeDonneesId) fd.append('jeuDeDonneesId', v.jeuDeDonneesId);
+    fd.append('explicabiliteUrl', v.explicabiliteUrl || '');
+    fd.append('fichier', this.selectedFile);
+
+    this.http.post('/api/smart-tools/models', fd).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Modèle publié.'); this.router.navigate(['/smart-tools/models']); },
-      error: () => { this.loading.set(false); this.toast.error('Erreur publication.'); },
+      error: err => { this.loading.set(false); this.toast.error(err.error?.error || 'Erreur publication.'); },
     });
   }
 }

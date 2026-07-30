@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -81,11 +82,12 @@ import { ToastService } from '../../core/toast.service';
     @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
   `]
 })
-export class EvenementFormComponent {
+export class EvenementFormComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   router = inject(Router);
+  private destroy$ = new Subject<void>();
   loading = signal(false);
 
   form = this.fb.nonNullable.group({
@@ -97,6 +99,8 @@ export class EvenementFormComponent {
     espacePrive: [false],
   });
 
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
   save() {
     if (this.form.invalid) return;
     this.loading.set(true);
@@ -106,7 +110,7 @@ export class EvenementFormComponent {
       dates: { debut: this.form.value.debut, fin: this.form.value.fin },
       capaciteMax: this.form.value.capaciteMax || undefined,
       espacePrive: this.form.value.espacePrive,
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Événement créé.'); this.router.navigate(['/evenements']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur.'); },
     });

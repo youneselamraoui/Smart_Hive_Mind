@@ -26,11 +26,15 @@
               }
             ],
             "styles": [
+              "src/theme-tokens.css",
               "src/styles.css"
             ]
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "fonts": false
+              },
               "budgets": [
                 {
                   "type": "initial",

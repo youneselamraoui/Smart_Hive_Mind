@@ -1,4 +1,6 @@
 const Publication = require("../models/Publication");
+const Membre = require("../models/Membre");
+const Mission = require("../models/Mission");
 
 const IA_CONVERSATIONAL_URL =
     process.env.IA_CONVERSATIONAL_URL || "http://ai-conversational:8000";
@@ -66,6 +68,26 @@ exports.indexPublications = async (req, res) => {
     }
 };
 
+const OBJECTID_RE = /^[0-9a-fA-F]{24}$/;
+
+async function resolveSources(sources) {
+    if (!sources || !sources.length) return sources;
+    const ids = sources.filter(s => OBJECTID_RE.test(s));
+    const others = sources.filter(s => !OBJECTID_RE.test(s));
+    if (!ids.length) return sources;
+    const [publications, membres, missions] = await Promise.all([
+        Publication.find({ _id: { $in: ids } }).select("titre").lean(),
+        Membre.find({ _id: { $in: ids } }).select("nom prenom").lean(),
+        Mission.find({ _id: { $in: ids } }).select("titre").lean(),
+    ]);
+    const map = new Map();
+    for (const p of publications) map.set(String(p._id), p.titre);
+    for (const m of membres) map.set(String(m._id), `${m.prenom} ${m.nom}`);
+    for (const m of missions) map.set(String(m._id), m.titre || `Mission ${String(m._id).slice(-6)}`);
+    const resolved = ids.map(id => map.get(id) || id);
+    return [...resolved, ...others];
+}
+
 exports.askConversational = async (req, res) => {
     try {
         const { question, scope, publicationId } = req.body;
@@ -92,6 +114,10 @@ exports.askConversational = async (req, res) => {
         }
 
         const data = await iaRes.json();
+
+        if (data.sources) {
+            data.sources = await resolveSources(data.sources);
+        }
 
         if (scope === "publications" && publicationId) {
             await Publication.findByIdAndUpdate(publicationId, {

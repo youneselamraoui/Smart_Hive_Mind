@@ -46,13 +46,31 @@ function arcGauge(pct: number): string {
           @for (v of paginatedItems(); track v._id) {
             <div class="card">
               <div class="card-top">
-                <span class="card-id">{{ v.missionId }}</span>
-                <span class="resultat-tag" [class]="'res--' + v.resultat">{{ v.resultat }}</span>
+                <span class="card-title">{{ v.missionId?.titre || v.competence || 'Validation' }}</span>
               </div>
-              <p>{{ (v.commentaire || '').length > 120 ? (v.commentaire | slice:0:120) + '…' : v.commentaire }}</p>
-              <div class="card-footer">
-                @if (v.matchingScore !== undefined) {
-                  <div class="match-gauge" [innerHTML]="arcGauge(v.matchingScore * 100)"></div>
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="meta-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    {{ v.membreId?.prenom || '' }} {{ v.membreId?.nom || 'Membre' }}
+                  </span>
+                  <span class="meta-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {{ v.createdAt | date:'dd/MM/yyyy' }}
+                  </span>
+                </div>
+                <div class="score-row">
+                  <span class="score-label">Compétence :</span>
+                  <span class="score-value">{{ v.competence || '—' }}</span>
+                </div>
+                <div class="score-row">
+                  <span class="score-label">Note :</span>
+                  <span class="score-value">{{ v.note ?? '—' }} / 5</span>
+                </div>
+                @if (v.validePar?.prenom) {
+                  <div class="valide-par">
+                    Validé par {{ v.validePar.prenom }} {{ v.validePar.nom }}
+                  </div>
                 }
               </div>
             </div>
@@ -86,16 +104,16 @@ function arcGauge(pct: number): string {
     .card { background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 10px; transition: border-color var(--transition); }
     .card:hover { border-color: var(--honey-500); }
     .card p { font-size: var(--text-sm); color: var(--ink-700); margin: 0; line-height: 1.5; }
-    .card-top { display: flex; align-items: center; gap: 8px; }
-    .card-id { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-700); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .resultat-tag { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; }
-    .res--valide { background: rgba(31,158,109,0.1); color: var(--verify-500); }
-    .res--rejete { background: rgba(196,67,46,0.1); color: var(--alert-500); }
-    .res--en_attente { background: rgba(217,160,43,0.1); color: var(--honey-600); }
-
-    .card-footer { display: flex; justify-content: flex-end; padding-top: 6px; border-top: 1px solid var(--line-200); }
-    .match-gauge { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .match-gauge :deep(.match-label) { font-size: 0.55rem; text-align: center; color: var(--ink-700); line-height: 1.2; max-width: 80px; }
+    .card-top { margin-bottom: 4px; }
+    .card-title { font-weight: 600; font-size: var(--text-base); }
+    .card-body { display: flex; flex-direction: column; gap: 8px; }
+    .card-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+    .meta-item { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--ink-700); }
+    .meta-item :deep(svg) { flex-shrink: 0; }
+    .score-row { display: flex; gap: 6px; font-size: var(--text-sm); }
+    .score-label { color: var(--ink-700); }
+    .score-value { font-weight: 600; }
+    .valide-par { font-size: var(--text-xs); color: var(--ink-700); font-style: italic; padding-top: 4px; border-top: 1px solid var(--line-200); }
 
     @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
   `]

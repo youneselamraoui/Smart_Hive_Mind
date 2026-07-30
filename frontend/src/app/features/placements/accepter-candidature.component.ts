@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { catchError, of, finalize } from 'rxjs';
+import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
 import { fadeInUp } from '../../core/animations';
 import { ICONS } from '../../core/icons';
 import { ToastService } from '../../core/toast.service';
@@ -137,7 +137,7 @@ interface Candidature {
     .btn-cancel:hover { background: var(--color-sky-blue-light); }
   `]
 })
-export class AccepterCandidatureComponent implements OnInit {
+export class AccepterCandidatureComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
@@ -147,6 +147,9 @@ export class AccepterCandidatureComponent implements OnInit {
   loading = signal(true);
   expandedId = signal<string | null>(null);
   submittingId = signal<string | null>(null);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   acceptForm = this.fb.nonNullable.group({
     periodeDebut: ['', Validators.required],
@@ -155,7 +158,7 @@ export class AccepterCandidatureComponent implements OnInit {
 
   ngOnInit() {
     this.http.get<Candidature[]>('/api/placements/candidatures?statut=en_attente')
-      .pipe(catchError(() => of([])), finalize(() => this.loading.set(false)))
+      .pipe(takeUntil(this.destroy$), catchError(() => of([])), finalize(() => this.loading.set(false)))
       .subscribe(list => this.candidatures = list);
   }
 
@@ -168,7 +171,7 @@ export class AccepterCandidatureComponent implements OnInit {
       candidatureId,
       periodeDebut: this.acceptForm.value.periodeDebut,
       periodeFin: this.acceptForm.value.periodeFin || undefined,
-    }, { headers }).subscribe({
+    }, { headers }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toast.success('Candidature acceptée, mission créée.');
         this.candidatures = this.candidatures.filter(c => c._id !== candidatureId);

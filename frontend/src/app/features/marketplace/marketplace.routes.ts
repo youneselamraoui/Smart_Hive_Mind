@@ -31,6 +31,11 @@ export const marketplaceRoutes: Routes = [
     title: 'Nouveau bounty',
   },
   {
+    path: 'bounties',
+    loadComponent: () => import('./bounty-list.component').then(m => m.BountyListComponent),
+    title: 'Bounties',
+  },
+  {
     path: 'bounties/:id',
     loadComponent: () =>
       import('./bounty-detail.component').then(m => m.BountyDetailComponent),

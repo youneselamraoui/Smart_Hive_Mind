@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -65,13 +66,14 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline-sm { padding: 6px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--color-text-secondary); text-decoration: none; }
   `]
 })
-export class BountyFormComponent implements OnInit {
+export class BountyFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   public router = inject(Router);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
 
   loading = signal(false);
+  private destroy$ = new Subject<void>();
 
   form = this.fb.nonNullable.group({
     titre: ['', Validators.required],
@@ -82,10 +84,12 @@ export class BountyFormComponent implements OnInit {
 
   ngOnInit() {}
 
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
   save() {
     if (this.form.invalid) return;
     this.loading.set(true);
-    this.http.post('/api/bounties', this.form.value).subscribe({
+    this.http.post('/api/bounties', this.form.value).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Bounty créé.'); this.router.navigate(['/marketplace']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur lors de la création.'); },
     });

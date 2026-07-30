@@ -13,8 +13,10 @@ const TYPE_LABELS: Record<string, string> = {
   concours: 'Concours',
 };
 
-function fmtSchedule(hour: string): string {
-  return hour.length >= 5 ? hour.slice(0, 5) : hour;
+interface ProgrammeItem {
+  intitule: string;
+  heure: string;
+  description?: string;
 }
 
 @Component({
@@ -33,19 +35,34 @@ function fmtSchedule(hour: string): string {
 
       <div class="body">
         <div class="col-main">
-          @if (ev.programme?.length) {
-            <section class="section-block">
-              <h2>Programme</h2>
+          <section class="section-block">
+            <h2>Programme</h2>
+            @if (ev.programme?.length) {
               <div class="schedule">
-                @for (p of ev.programme; track p) {
-                  <div class="sch-row">
-                    <span class="sch-time">{{ schTime(p) }}</span>
-                    <span class="sch-label">{{ schLabel(p) }}</span>
+                @for (p of ev.programme; track $index) {
+                  <div class="sch-row" [class.sch-row--owner]="isOrganisateur(ev)">
+                    <span class="sch-time">{{ p.heure }}</span>
+                    <span class="sch-label">
+                      <strong>{{ p.intitule }}</strong>
+                      @if (p.description) { <br /><span class="sch-desc">{{ p.description }}</span> }
+                    </span>
+                    @if (isOrganisateur(ev)) {
+                      <button class="sch-del" (click)="supprimerProgramme(ev._id, $index)" title="Supprimer">&times;</button>
+                    }
                   </div>
                 }
               </div>
-            </section>
-          }
+            } @else {
+              <p class="empty">Aucun programme défini.</p>
+            }
+            @if (isOrganisateur(ev)) {
+              <div class="prog-add">
+                <input class="input input--sm" [(ngModel)]="progHeure" placeholder="Heure (ex: 14:00)" />
+                <input class="input input--sm" [(ngModel)]="progIntitule" placeholder="Intitulé" />
+                <button class="btn btn-xs" [disabled]="!progHeure.trim() || !progIntitule.trim() || progSubmitting()" (click)="ajouterProgramme(ev._id)">{{ progSubmitting() ? '…' : '+' }}</button>
+              </div>
+            }
+          </section>
 
           @if (ev.type === 'hackathon' && oeuvres().length) {
             <section class="section-block">
@@ -120,7 +137,7 @@ function fmtSchedule(hour: string): string {
     @keyframes sh { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
 
     .banner { background: var(--ink-900); border-radius: var(--radius-md); padding: 36px; margin-bottom: 28px; }
-    .banner-type { display: inline-block; font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--honey-500); margin-bottom: 8px; }
+    .banner-type { display: inline-block; font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--indigo-500); margin-bottom: 8px; }
     .banner-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 600; color: var(--paper-50); margin: 0 0 6px; line-height: 1.2; }
     .banner-dates { font-size: var(--text-sm); color: rgba(246,245,242,0.6); }
 
@@ -129,10 +146,21 @@ function fmtSchedule(hour: string): string {
     .section-block h2 { font-size: var(--text-lg); margin: 0 0 16px; }
 
     .schedule { display: flex; flex-direction: column; }
-    .sch-row { display: flex; gap: 16px; padding: 10px 0; position: relative; }
+    .sch-row { display: flex; gap: 16px; padding: 10px 0; position: relative; align-items: baseline; }
     .sch-row:not(:last-child)::before { content: ''; position: absolute; left: 44px; top: 28px; bottom: 0; width: 1px; background: var(--line-200); }
-    .sch-time { flex-shrink: 0; width: 40px; font-family: var(--font-mono); font-size: var(--text-sm); color: var(--ink-700); text-align: right; }
+    .sch-row--owner { padding-right: 30px; }
+    .sch-time { flex-shrink: 0; width: 40px; font-family: var(--font-mono); font-size: var(--text-sm); color: var(--indigo-500); text-align: right; }
     .sch-label { flex: 1; font-size: var(--text-sm); color: var(--ink-900); padding-left: 12px; border-left: 1px solid var(--line-200); }
+    .sch-label strong { font-weight: 600; }
+    .sch-desc { font-size: var(--text-xs); color: var(--ink-600); }
+    .sch-del { position: absolute; right: 0; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--ink-400); cursor: pointer; font-size: 1.1rem; padding: 2px 6px; border-radius: 4px; transition: all var(--transition); line-height: 1; }
+    .sch-del:hover { color: var(--error-500); background: rgba(196,67,46,0.08); }
+    .empty { font-size: var(--text-sm); color: var(--ink-500); font-style: italic; margin: 0; }
+    .prog-add { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+    .input--sm { padding: 6px 10px; font-size: var(--text-xs); max-width: 140px; }
+    .btn-xs { padding: 6px 12px; font-size: var(--text-xs); border-radius: var(--radius-sm); border: none; background: var(--indigo-500); color: #fff; font-weight: 600; cursor: pointer; transition: background var(--transition); }
+    .btn-xs:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-xs:hover:not(:disabled) { background: var(--indigo-600); }
 
     .oeuvres { display: flex; flex-direction: column; gap: 12px; }
     .oeuvre-card { background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); padding: 20px; }
@@ -148,22 +176,22 @@ function fmtSchedule(hour: string): string {
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: all var(--transition); border: none; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-full { width: 100%; }
-    .btn-primary { background: var(--honey-500); color: var(--ink-900); }
-    .btn-primary:hover:not(:disabled) { background: var(--honey-600); }
+    .btn-primary { background: var(--indigo-500); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--indigo-600); }
     .btn-outline { background: none; border: 1px solid var(--line-200); color: var(--ink-900); }
-    .btn-outline:hover { border-color: var(--honey-500); }
+    .btn-outline:hover { border-color: var(--indigo-500); }
 
     .msg-ok { display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(31,158,109,0.08); border: 1px solid rgba(31,158,109,0.15); color: var(--verify-500); font-size: var(--text-sm); font-weight: 500; justify-content: center; }
 
     .capacity-bar { height: 6px; background: var(--line-200); border-radius: 999px; overflow: hidden; }
-    .cap-fill { height: 100%; background: var(--honey-500); border-radius: 999px; transition: width 0.6s ease; }
+    .cap-fill { height: 100%; background: var(--indigo-500); border-radius: 999px; transition: width 0.6s ease; }
     .capacity-label { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-700); text-align: center; }
 
     .divider { border: none; border-top: 1px solid var(--line-200); margin: 16px 0; }
     .soumettre-block { display: flex; flex-direction: column; gap: 10px; }
     .soumettre-form { display: flex; flex-direction: column; gap: 8px; }
     .input { padding: 10px 14px; border: 1px solid var(--line-200); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); outline: none; background: var(--color-surface); color: var(--ink-900); transition: border-color var(--transition); }
-    .input:focus { border-color: var(--honey-500); }
+    .input:focus { border-color: var(--indigo-500); }
     .input--ta { resize: vertical; min-height: 60px; }
     .protection-note { font-size: var(--text-xs); color: var(--ink-700); font-style: italic; margin: 0; text-align: center; }
 
@@ -199,17 +227,9 @@ export class EvenementDetailComponent implements OnInit {
     return Math.min(100, Math.round(((ev.inscrits?.length || 0) / ev.capaciteMax) * 100));
   }
 
-  schTime(p: string): string {
-    const s = String(p);
-    if (!s) return '';
-    const m = s.match(/^(\d{1,2}[:h]\d{2})\s*/);
-    return m ? m[1].replace('h', ':') : '';
-  }
-  schLabel(p: string): string {
-    const s = String(p);
-    if (!s) return '';
-    return s.replace(/^\d{1,2}[:h]\d{2}\s*/, '');
-  }
+  progHeure = '';
+  progIntitule = '';
+  progSubmitting = signal(false);
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -217,7 +237,7 @@ export class EvenementDetailComponent implements OnInit {
     this.http.get<any>('/api/evenements/' + id).subscribe({
       next: ev => {
         this.e.set(ev);
-        this.inscrit.set(ev.inscrits?.some((m: any) => m._id === this.membreId) || false);
+        this.inscrit.set(ev.inscrits?.some((m: any) => (m._id || m) === this.membreId) || false);
         if (ev.type === 'hackathon') {
           this.http.get<any[]>('/api/evenements/' + id + '/oeuvres').subscribe({
             next: list => this.oeuvres.set(list),
@@ -229,6 +249,38 @@ export class EvenementDetailComponent implements OnInit {
     });
   }
 
+  isOrganisateur(ev: any): boolean {
+    return ev.organisateurId?._id === this.membreId || ev.organisateurId === this.membreId;
+  }
+
+  ajouterProgramme(evenementId: string) {
+    if (!this.progHeure.trim() || !this.progIntitule.trim()) return;
+    this.progSubmitting.set(true);
+    this.http.post<any>('/api/evenements/' + evenementId + '/programme', {
+      heure: this.progHeure,
+      intitule: this.progIntitule,
+    }).subscribe({
+      next: r => {
+        this.e.update(ev => ({ ...ev, programme: r.programme }));
+        this.progHeure = '';
+        this.progIntitule = '';
+        this.progSubmitting.set(false);
+        this.toast.success('Élément ajouté au programme.');
+      },
+      error: err => { this.progSubmitting.set(false); this.toast.error(err.error?.error || 'Erreur.'); },
+    });
+  }
+
+  supprimerProgramme(evenementId: string, index: number) {
+    this.http.delete('/api/evenements/' + evenementId + '/programme/' + index).subscribe({
+      next: r => {
+        this.e.update(ev => ({ ...ev, programme: (r as any).programme }));
+        this.toast.success('Élément supprimé.');
+      },
+      error: err => this.toast.error(err.error?.error || 'Erreur.'),
+    });
+  }
+
   inscrire() {
     const id = this.e()._id;
     this.http.post<any>('/api/evenements/inscrire', { evenementId: id }).subscribe({
@@ -237,7 +289,7 @@ export class EvenementDetailComponent implements OnInit {
         this.e.set(res.evenement || { ...this.e(), inscrits: [...(this.e().inscrits || []), { _id: this.membreId }] });
         this.toast.success('Inscription confirmée.');
       },
-      error: () => this.toast.error('Erreur lors de l\'inscription.'),
+      error: err => this.toast.error(err.error?.error || 'Erreur lors de l\'inscription.'),
     });
   }
 

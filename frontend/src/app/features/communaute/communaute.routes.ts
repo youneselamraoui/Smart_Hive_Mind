@@ -8,10 +8,20 @@ export const communauteRoutes: Routes = [
     title: 'Forums - Communauté',
   },
   {
+    path: 'sujets/new',
+    loadComponent: () => import('./sujet-form.component').then(m => m.SujetFormComponent),
+    title: 'Nouveau sujet',
+  },
+  {
     path: 'sujets/:id',
     loadComponent: () =>
       import('./sujet-detail/sujet-detail').then(m => m.SujetDetailComponent),
     title: 'Sujet',
+  },
+  {
+    path: 'sondages/new',
+    loadComponent: () => import('./sondage-form.component').then(m => m.SondageFormComponent),
+    title: 'Nouveau sondage',
   },
   {
     path: 'sondages',
@@ -25,6 +35,11 @@ export const communauteRoutes: Routes = [
     title: 'Détail du sondage',
   },
   {
+    path: 'temoignages/new',
+    loadComponent: () => import('./temoignage-form.component').then(m => m.TemoignageFormComponent),
+    title: 'Nouveau témoignage',
+  },
+  {
     path: 'temoignages',
     loadComponent: () =>
       import('./temoignages-list/temoignages-list').then(m => m.TemoignagesListComponent),
@@ -34,21 +49,6 @@ export const communauteRoutes: Routes = [
     path: 'sujets',
     loadComponent: () => import('./sujet-list.component').then(m => m.SujetListComponent),
     title: 'Sujets de discussion',
-  },
-  {
-    path: 'sujets/new',
-    loadComponent: () => import('./sujet-form.component').then(m => m.SujetFormComponent),
-    title: 'Nouveau sujet',
-  },
-  {
-    path: 'sondages/new',
-    loadComponent: () => import('./sondage-form.component').then(m => m.SondageFormComponent),
-    title: 'Nouveau sondage',
-  },
-  {
-    path: 'temoignages/new',
-    loadComponent: () => import('./temoignage-form.component').then(m => m.TemoignageFormComponent),
-    title: 'Nouveau témoignage',
   },
   {
     path: 'groupements',

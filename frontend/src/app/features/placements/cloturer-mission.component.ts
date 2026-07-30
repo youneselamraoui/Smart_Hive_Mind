@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { catchError, of, finalize } from 'rxjs';
+import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
 import { fadeInUp } from '../../core/animations';
 import { ICONS } from '../../core/icons';
 import { ToastService } from '../../core/toast.service';
@@ -150,7 +150,7 @@ interface Mission {
     .btn-cancel:hover { background: var(--color-sky-blue-light); }
   `]
 })
-export class CloturerMissionComponent implements OnInit {
+export class CloturerMissionComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   private fb = inject(FormBuilder);
@@ -160,6 +160,9 @@ export class CloturerMissionComponent implements OnInit {
   loading = signal(true);
   expandedId = signal<string | null>(null);
   submittingId = signal<string | null>(null);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   clotureForm = this.fb.nonNullable.group({
     evaluationClient: ['', Validators.required],
@@ -169,7 +172,7 @@ export class CloturerMissionComponent implements OnInit {
 
   ngOnInit() {
     this.http.get<Mission[]>('/api/placements/missions')
-      .pipe(catchError(() => of([])), finalize(() => this.loading.set(false)))
+      .pipe(takeUntil(this.destroy$), catchError(() => of([])), finalize(() => this.loading.set(false)))
       .subscribe(list => {
         this.missions = list.filter(m => m.statut === 'en_cours');
       });
@@ -190,7 +193,7 @@ export class CloturerMissionComponent implements OnInit {
       evaluationClient: Number(val.evaluationClient),
       commentaire: val.commentaire || '',
       competence: val.competence || '',
-    }, { headers }).subscribe({
+    }, { headers }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.toast.success('Mission clôturée avec succès.');
         this.missions = this.missions.filter(m => m._id !== missionId);

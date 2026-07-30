@@ -1,15 +1,15 @@
 <header class="home-nav">
   <a routerLink="/" class="home-nav__logo">
     <svg viewBox="0 0 32 32" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <polygon points="16 2 28 8 28 24 16 30 4 24 4 8" stroke="var(--honey-500)" stroke-width="1.5"/>
-      <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="var(--font-mono)" font-size="7" font-weight="700" fill="var(--honey-500)">SHM</text>
+      <polygon points="16 2 28 8 28 24 16 30 4 24 4 8" stroke="var(--indigo-500)" stroke-width="1.5"/>
+      <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="var(--font-mono)" font-size="7" font-weight="700" fill="var(--indigo-500)">SHM</text>
     </svg>
     <span>Smart Hive Mind</span>
   </a>
   <nav class="home-nav__links">
-    <a href="#confiance">Confiance certifiée</a>
+    <a href="#comment">Comment ça marche</a>
     <a href="#espaces">Espaces</a>
-    <a href="#communaute">Communauté</a>
+    <a href="#confiance">Confiance certifiée</a>
   </nav>
   <div class="home-nav__actions">
     <a routerLink="/login" class="btn btn--ghost">Se connecter</a>
@@ -39,32 +39,38 @@
     </div>
   </div>
   <div class="hero__visual">
-    <svg viewBox="0 0 480 480" width="480" height="480" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g stroke="var(--line-200)" stroke-width="1" stroke-linecap="round">
-        <line x1="120" y1="120" x2="240" y2="240"/>
-        <line x1="240" y1="240" x2="360" y2="120"/>
-        <line x1="120" y1="120" x2="240" y2="360"/>
-        <line x1="240" y1="240" x2="360" y2="360"/>
-        <line x1="240" y1="240" x2="120" y2="360"/>
-        <line x1="360" y1="120" x2="240" y2="240"/>
-        <line x1="360" y1="360" x2="240" y2="240"/>
-        <line x1="120" y1="360" x2="240" y2="240"/>
+    <svg class="hero-svg" viewBox="0 0 480 480" width="480" height="480" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="var(--indigo-300)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--indigo-500)" stop-opacity="0.6"/>
+        </linearGradient>
+      </defs>
+      <g stroke="url(#lineGrad)" stroke-width="1.5" stroke-linecap="round" class="lines-group">
+        <line x1="120" y1="120" x2="240" y2="240" class="line l1"/>
+        <line x1="240" y1="240" x2="360" y2="120" class="line l2"/>
+        <line x1="120" y1="120" x2="240" y2="360" class="line l3"/>
+        <line x1="240" y1="240" x2="360" y2="360" class="line l4"/>
+        <line x1="240" y1="240" x2="120" y2="360" class="line l5"/>
+        <line x1="360" y1="120" x2="240" y2="240" class="line l6"/>
+        <line x1="360" y1="360" x2="240" y2="240" class="line l7"/>
+        <line x1="120" y1="360" x2="240" y2="240" class="line l8"/>
       </g>
-      <g fill="var(--ink-900)">
-        <circle cx="120" cy="120" r="8"/>
-        <circle cx="240" cy="240" r="10"/>
-        <circle cx="360" cy="120" r="8"/>
-        <circle cx="120" cy="360" r="8"/>
-        <circle cx="360" cy="360" r="8"/>
-        <circle cx="240" cy="80" r="6"/>
-        <circle cx="240" cy="400" r="6"/>
-        <circle cx="80" cy="240" r="6"/>
-        <circle cx="400" cy="240" r="6"/>
+      <g class="nodes-group">
+        <circle cx="120" cy="120" r="10" class="node n1"/>
+        <circle cx="240" cy="240" r="14" class="node n2"/>
+        <circle cx="360" cy="120" r="10" class="node n3"/>
+        <circle cx="120" cy="360" r="10" class="node n4"/>
+        <circle cx="360" cy="360" r="10" class="node n5"/>
+        <circle cx="240" cy="80" r="7" class="node n6"/>
+        <circle cx="240" cy="400" r="7" class="node n7"/>
+        <circle cx="80" cy="240" r="7" class="node n8"/>
+        <circle cx="400" cy="240" r="7" class="node n9"/>
       </g>
-      <g fill="none" stroke="var(--honey-500)" stroke-width="2">
-        <polygon points="240 222 257.3 227 257.3 237 240 242 222.7 237 222.7 227"/>
-        <polygon points="120 102 137.3 107 137.3 117 120 122 102.7 117 102.7 107"/>
-        <polygon points="360 342 377.3 347 377.3 357 360 362 342.7 357 342.7 347"/>
+      <g class="hex-group">
+        <polygon points="240,222 257.3,227 257.3,237 240,242 222.7,237 222.7,227" class="hex h1"/>
+        <polygon points="120,102 137.3,107 137.3,117 120,122 102.7,117 102.7,107" class="hex h2"/>
+        <polygon points="360,342 377.3,347 377.3,357 360,362 342.7,357 342.7,347" class="hex h3"/>
       </g>
     </svg>
   </div>
@@ -109,42 +115,60 @@
   </div>
 </section>
 
+<section id="comment" class="how-it-works">
+  <p class="section-eyebrow">UN PARCOURS EN QUATRE ÉTAPES</p>
+  <h2 class="section-title">Comment ça marche</h2>
+  <div class="steps__grid">
+    @for (step of steps; track step.numero; let last = $last) {
+      <div class="step">
+        <div class="step__badge">{{ step.numero }}</div>
+        <div class="step__icon"><i [class]="step.icon"></i></div>
+        <h3 class="step__title">{{ step.titre }}</h3>
+        <p class="step__desc">{{ step.description }}</p>
+        @if (!last) {
+          <div class="step__connector" aria-hidden="true"></div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
 <section id="espaces" class="spaces">
   <p class="section-eyebrow">L'ÉCOSYSTÈME</p>
   <h2 class="section-title">Sept espaces, un seul compte</h2>
   <div class="spaces__grid">
     <a routerLink="/app/publications" class="space__card">
-      <div class="space__icon" [innerHTML]="icons.publications"></div>
+      <div class="space__icon"><i class="pi pi-file"></i></div>
       <h3>Publications</h3>
       <p>Écrire, protéger, faire évaluer. Articles, rapports, papiers de recherche.</p>
     </a>
     <a routerLink="/app/communaute" class="space__card">
-      <div class="space__icon" [innerHTML]="icons.communaute"></div>
+      <div class="space__icon"><i class="pi pi-comments"></i></div>
       <h3>Communautés</h3>
       <p>Forums thématiques, groupes d'intérêt, événements, mentorat.</p>
     </a>
     <a routerLink="/app/smart-tools" class="space__card">
-      <div class="space__icon" [innerHTML]="icons['smart-tools']"></div>
+      <div class="space__icon"><i class="pi pi-cog"></i></div>
       <h3>Smart Tools</h3>
       <p>Modèles IA, datasets, notebooks, pipelines CI/CD pour la recherche.</p>
     </a>
     <a routerLink="/app/marketplace" class="space__card">
-      <div class="space__icon" [innerHTML]="icons.marketplace"></div>
+      <div class="space__icon"><i class="pi pi-shopping-bag"></i></div>
       <h3>Marketplace</h3>
       <p>Bounties, missions freelances, offres d'emploi, validation croisée.</p>
     </a>
     <a routerLink="/app/entrepreneuriat" class="space__card">
-      <div class="space__icon" [innerHTML]="icons.entrepreneuriat"></div>
+      <div class="space__icon"><i class="pi pi-chart-line"></i></div>
       <h3>Entrepreneuriat</h3>
       <p>Boîte à idées, business plans, crowdfunding, accompagnement.</p>
     </a>
     <a routerLink="/app/placements" class="space__card">
-      <div class="space__icon" [innerHTML]="icons.placements"></div>
+      <div class="space__icon"><i class="pi pi-briefcase"></i></div>
       <h3>Placements</h3>
       <p>Stages, alternances, premiers emplois, suivi carrière.</p>
     </a>
     <a routerLink="/app/evenements" class="space__card">
-      <div class="space__icon" [innerHTML]="icons.evenements"></div>
+      <div class="space__icon"><i class="pi pi-calendar"></i></div>
       <h3>Événements</h3>
       <p>Hackathons, conférences, salons, concours, formations.</p>
     </a>
@@ -155,16 +179,16 @@
   <section class="stats">
     <ul class="stats__list">
       <li class="stat">
-        <span class="stat__value">{{ s.totalMembres ?? 0 }}</span>
-        <span class="stat__label">Membres inscrits</span>
+        <span class="stat__value stat__value--membres">{{ s.totalMembres ?? 0 }}</span>
+        <span class="stat__label">Membres actifs</span>
       </li>
       <li class="stat">
-        <span class="stat__value">{{ s.totalPublications ?? 0 }}</span>
-        <span class="stat__label">Publications</span>
+        <span class="stat__value stat__value--publications">{{ s.totalPublications ?? 0 }}</span>
+        <span class="stat__label">Publications protégées</span>
       </li>
       <li class="stat">
-        <span class="stat__value">{{ s.totalMissions ?? 0 }}</span>
-        <span class="stat__label">Missions réalisées</span>
+        <span class="stat__value stat__value--missions">{{ s.totalMissions ?? 0 }}</span>
+        <span class="stat__label">Missions validées</span>
       </li>
     </ul>
   </section>
@@ -180,12 +204,43 @@
 </section>
 
 <footer class="home-footer">
-  <div class="home-footer__brand">
-    <span>Smart Hive Mind</span>
-    <p>Une plateforme Smart Automation Technologies (SAT)</p>
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <div class="footer__logo">
+        <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon points="16 2 28 8 28 24 16 30 4 24 4 8" stroke="var(--indigo-500)" stroke-width="1.5"/>
+          <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="var(--font-mono)" font-size="7" font-weight="700" fill="var(--indigo-500)">SHM</text>
+        </svg>
+        <span>Smart Hive Mind</span>
+      </div>
+      <p class="footer__tagline">Une plateforme <strong>Smart Automation Technologies (SAT)</strong></p>
+      <div class="footer__social">
+        <a href="#" aria-label="LinkedIn"><i class="pi pi-linkedin"></i></a>
+        <a href="#" aria-label="Twitter"><i class="pi pi-twitter"></i></a>
+        <a href="#" aria-label="GitHub"><i class="pi pi-github"></i></a>
+      </div>
+    </div>
+    <div class="footer__cols">
+      <div class="footer__col">
+        <h4>Plateforme</h4>
+        <a routerLink="/login">Connexion</a>
+        <a routerLink="/register">Inscription</a>
+        <a href="#comment">Comment ça marche</a>
+      </div>
+      <div class="footer__col">
+        <h4>Légal</h4>
+        <a href="#">Mentions légales</a>
+        <a href="#">Politique de confidentialité</a>
+        <a href="#">CGU</a>
+      </div>
+      <div class="footer__col">
+        <h4>Contact</h4>
+        <a href="mailto:contact@smarthivemind.ma">contact&#64;smarthivemind.ma</a>
+        <a href="#">Support technique</a>
+      </div>
+    </div>
   </div>
-  <div class="home-footer__links">
-    <a routerLink="/login">Se connecter</a>
-    <a routerLink="/register">S'inscrire</a>
+  <div class="footer__bottom">
+    <span>&copy; 2024 Smart Automation Technologies. Tous droits réservés.</span>
   </div>
 </footer>

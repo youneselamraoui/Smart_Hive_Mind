@@ -11,7 +11,10 @@ const router = Router();
 
 router.get("/placements/offres", async (req, res) => {
     try {
-        const items = await Offre.find().populate("organisationId", "nom prenom email").sort({ createdAt: -1 });
+        const filter = {};
+        if (req.query.statut) { if (req.query.statut !== "all") filter.statut = req.query.statut; }
+        else filter.statut = "ouverte";
+        const items = await Offre.find(filter).populate("organisationId", "nom prenom email").sort({ createdAt: -1 });
         res.json(items);
     } catch (err) {
         res.status(500).json({ error: "Erreur interne." });
@@ -47,7 +50,12 @@ router.get("/placements/candidatures", async (req, res) => {
 router.get("/placements/validations", async (req, res) => {
     try {
         const filter = req.query.membreId ? { membreId: req.query.membreId } : {};
-        const items = await ValidationCompetence.find(filter).populate("membreId", "nom prenom email").sort({ createdAt: -1 });
+        const Mission = require("../models/Mission");
+        const items = await ValidationCompetence.find(filter)
+            .populate("membreId", "nom prenom email")
+            .populate("missionId", "titre description statut")
+            .populate("validePar", "nom prenom email")
+            .sort({ createdAt: -1 });
         res.json(items);
     } catch (err) {
         res.status(500).json({ error: "Erreur interne." });

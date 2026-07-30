@@ -17,6 +17,11 @@ export const entrepreneuriatRoutes: Routes = [
     title: 'Nouveau business plan',
   },
   {
+    path: 'business-plans/:id',
+    loadComponent: () => import('./business-plan-form.component').then(m => m.BusinessPlanFormComponent),
+    title: 'Business plan',
+  },
+  {
     path: 'idees',
     loadComponent: () =>
       import('./boite-idees.component').then(m => m.BoiteIdeesComponent),
@@ -33,6 +38,11 @@ export const entrepreneuriatRoutes: Routes = [
     loadComponent: () =>
       import('./campagne-crowdfunding.component').then(m => m.CampagneCrowdfundingComponent),
     title: 'Campagnes de crowdfunding',
+  },
+  {
+    path: ':id',
+    redirectTo: 'business-plans/:id',
+    pathMatch: 'full',
   },
   {
     path: 'mentorats/demander',

@@ -18,6 +18,8 @@ const Sondage = require("../models/Sondage");
 
 const router = Router();
 
+router.get("/communaute/thematiques", ctrl.listThematiques);
+
 router.get("/communaute/forums", async (req, res) => {
     try {
         const items = await Forum.find().populate("thematiques").sort({ _id: -1 });

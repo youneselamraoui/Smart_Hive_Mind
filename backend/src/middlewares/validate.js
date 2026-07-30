@@ -1,6 +1,7 @@
 function validate(schema) {
     return (req, res, next) => {
-        const result = schema.safeParse(req.body);
+        const data = ['GET', 'DELETE'].includes(req.method) ? req.query : req.body;
+        const result = schema.safeParse(data);
         if (!result.success) {
             const details = result.error.issues.map((issue) => ({
                 champ: issue.path.join("."),
@@ -11,7 +12,11 @@ function validate(schema) {
                 details,
             });
         }
-        req.body = result.data;
+        if (['GET', 'DELETE'].includes(req.method)) {
+            req.query = result.data;
+        } else {
+            req.body = result.data;
+        }
         next();
     };
 }

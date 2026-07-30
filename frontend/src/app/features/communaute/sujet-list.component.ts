@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -92,6 +92,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class SujetListComponent implements OnInit {
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
   loading = signal(true);
   sujets = signal<any[]>([]);
   thematiques: any[] = [];
@@ -99,15 +100,18 @@ export class SujetListComponent implements OnInit {
 
   ngOnInit() {
     this.http.get<any[]>('/api/communaute/thematiques').subscribe(list => this.thematiques = list);
-    this.loadSujets();
+    this.route.queryParams.subscribe(params => {
+      if (params['thematiqueId']) this.selectedThematique.set(params['thematiqueId']);
+      this.loadSujets();
+    });
   }
 
   private loadSujets() {
     this.loading.set(true);
     const params: any = {};
-    if (this.selectedThematique()) params.thematique = this.selectedThematique();
-    this.http.get<any[]>('/api/communaute/sujets', { params }).subscribe({
-      next: list => this.sujets.set(list),
+    if (this.selectedThematique()) params.thematiqueId = this.selectedThematique();
+    this.http.get<any>('/api/communaute/sujets', { params }).subscribe({
+      next: res => this.sujets.set(res.sujets || []),
       error: () => this.sujets.set([]),
       complete: () => this.loading.set(false),
     });

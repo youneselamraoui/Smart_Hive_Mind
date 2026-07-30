@@ -14,6 +14,11 @@ const missionSchema = new mongoose.Schema(
             ref: "Membre",
             required: true,
         },
+        titre: { type: String, trim: true },
+        description: { type: String, trim: true },
+        competencesRequises: [{ type: String, trim: true }],
+        budget: { type: Number, min: 0 },
+        dateLimite: { type: Date },
         periode: {
             debut: { type: Date, required: true },
             fin: { type: Date },

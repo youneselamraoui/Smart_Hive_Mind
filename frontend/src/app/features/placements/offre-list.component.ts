@@ -56,7 +56,11 @@ function arcGauge(pct: number): string {
                 @if (o.matchingScore !== undefined) {
                   <div class="match-gauge" [innerHTML]="arcGauge(o.matchingScore * 100)"></div>
                 }
-                <button class="btn btn-primary" (click)="postuler(o)">Postuler</button>
+                @if (o.statut === 'ouverte') {
+                  <button class="btn btn-primary" (click)="postuler(o)">Postuler</button>
+                } @else {
+                  <span class="btn btn-disabled">{{ o.statut }}</span>
+                }
               </div>
             </div>
           }
@@ -107,6 +111,7 @@ function arcGauge(pct: number): string {
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: all var(--transition); white-space: nowrap; }
     .btn-primary { background: var(--honey-500); color: var(--ink-900); }
     .btn-primary:hover { background: var(--honey-600); }
+    .btn-disabled { background: var(--line-200); color: var(--ink-700); cursor: default; }
 
     @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
   `]
@@ -137,7 +142,7 @@ export class OffreListComponent implements OnInit {
     const headers = new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
     this.http.post('/api/placements/postuler', { offreId: o._id }, { headers }).subscribe({
       next: () => this.toast.success('Candidature envoyée pour ' + o.titre),
-      error: () => this.toast.error('Erreur lors de la candidature'),
+      error: err => this.toast.error(err.error?.error || 'Erreur lors de la candidature'),
     });
   }
 }

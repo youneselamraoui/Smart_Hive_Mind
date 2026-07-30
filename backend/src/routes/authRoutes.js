@@ -8,6 +8,22 @@ const Membre = require("../models/Membre");
 
 const router = Router();
 
+router.get("/membres", async (req, res) => {
+    try {
+        const { search, role } = req.query;
+        const filter = {};
+        if (role) filter.role = role;
+        if (search) {
+            const r = new RegExp(search, "i");
+            filter.$or = [{ nom: r }, { prenom: r }, { email: r }];
+        }
+        const items = await Membre.find(filter).select("nom prenom email role").sort({ nom: 1 }).limit(100);
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne." });
+    }
+});
+
 router.get("/membres/:id", async (req, res) => {
     try {
         const item = await Membre.findById(req.params.id).select("-motDePasse");

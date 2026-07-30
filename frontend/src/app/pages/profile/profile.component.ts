@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 function identiconSvg(id: string, name: string): string {
@@ -92,12 +93,13 @@ function identiconSvg(id: string, name: string): string {
     .btn-primary:hover:not(:disabled) { background: var(--honey-600); }
   `]
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   membre = signal<any>(null);
   loading = signal(false);
+  private destroy$ = new Subject<void>();
 
   form = this.fb.nonNullable.group({
     nom: ['', Validators.required],
@@ -109,11 +111,13 @@ export class ProfileComponent implements OnInit {
   identicon = identiconSvg;
 
   ngOnInit() {
-    this.http.get<any>('/api/auth/me').subscribe({
+    this.http.get<any>('/api/auth/me').pipe(takeUntil(this.destroy$)).subscribe({
       next: m => { this.membre.set(m); this.form.patchValue({ nom: m.nom, prenom: m.prenom, email: m.email }); },
       error: () => this.toast.error('Impossible de charger le profil.'),
     });
   }
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   save() {
     if (this.form.invalid) return;
@@ -124,7 +128,7 @@ export class ProfileComponent implements OnInit {
     if (v.prenom) body['prenom'] = v.prenom;
     if (v.email) body['email'] = v.email;
     if (v.motDePasse) body['motDePasse'] = v.motDePasse;
-    this.http.put('/api/auth/mon-profil', body).subscribe({
+    this.http.put('/api/auth/mon-profil', body).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => { this.membre.set(res.membre); this.loading.set(false); this.toast.success('Profil mis à jour.'); },
       error: err => { this.loading.set(false); this.toast.error(err.error?.error || 'Erreur.'); },
     });

@@ -7,12 +7,12 @@ const {
     generateBusinessPlanSchema,
     contributeSchema,
     voteIdeeSchema,
+    createCampagneSchema,
 } = require("../validators/entrepreneuriatSchema");
 const ctrl = require("../controllers/entrepreneuriatController");
 const Idee = require("../models/Idee");
 const CampagneCrowdfunding = require("../models/CampagneCrowdfunding");
 const Projet = require("../models/Projet");
-const BusinessPlan = require("../models/BusinessPlan");
 
 const router = Router();
 
@@ -44,20 +44,16 @@ router.get("/entrepreneuriat/projets/:id", async (req, res) => {
     }
 });
 
-router.get("/entrepreneuriat/business-plans", async (req, res) => {
-    try {
-        const filter = req.query.projetId ? { projetId: req.query.projetId } : {};
-        const items = await BusinessPlan.find(filter).sort({ createdAt: -1 });
-        res.json(items);
-    } catch (err) {
-        res.status(500).json({ error: "Erreur interne." });
-    }
-});
+router.get("/entrepreneuriat/business-plans", ctrl.listBusinessPlans);
+router.get("/entrepreneuriat/business-plans/:id", ctrl.getBusinessPlan);
+router.post("/entrepreneuriat/business-plans", auth, ctrl.createBusinessPlan);
+router.put("/entrepreneuriat/business-plans/:id", auth, ctrl.updateBusinessPlan);
 
 router.post("/entrepreneuriat/idees", auth, validate(createIdeeSchema), ctrl.createIdee);
 router.post("/entrepreneuriat/idees/vote", auth, validate(voteIdeeSchema), ctrl.voteIdee);
 router.post("/entrepreneuriat/idees/promote", auth, validate(promoteToProjetSchema), ctrl.promoteToProjet);
 router.post("/entrepreneuriat/business-plan/generate", auth, validate(generateBusinessPlanSchema), ctrl.generateBusinessPlan);
+router.post("/entrepreneuriat/campagnes", auth, validate(createCampagneSchema), ctrl.createCampagne);
 router.post("/entrepreneuriat/campagnes/contribute", auth, validate(contributeSchema), ctrl.contributeToCampaign);
 
 module.exports = router;

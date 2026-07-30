@@ -23,6 +23,14 @@ router.get("/smart-tools/ateliers/:id", async (req, res) => {
 router.post("/smart-tools/ateliers/:id/progress", internalAuth, ctrl.reportProgress);
 router.post("/smart-tools/ateliers/:id/finalize", internalAuth, ctrl.finalizeAtelier);
 
+router.get("/smart-tools/datasets", async (req, res) => {
+    try {
+        const items = await require("../models/JeuDeDonnees").find().populate("uploadePar", "nom prenom email").sort({ createdAt: -1 });
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne." });
+    }
+});
 router.post("/smart-tools/datasets", auth, ctrl.uploadMiddleware, validate(createDatasetSchema), ctrl.uploadDataset);
 router.get("/smart-tools/datasets/:id/download", ctrl.downloadDataset);
 

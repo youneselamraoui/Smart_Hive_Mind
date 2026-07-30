@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -70,11 +71,12 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline-sm { padding: 6px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--color-text-secondary); text-decoration: none; }
   `]
 })
-export class MissionFormComponent implements OnInit {
+export class MissionFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   public router = inject(Router);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private destroy$ = new Subject<void>();
 
   loading = signal(false);
 
@@ -88,13 +90,21 @@ export class MissionFormComponent implements OnInit {
 
   ngOnInit() {}
 
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
   save() {
     if (this.form.invalid) return;
     this.loading.set(true);
 
-    this.http.post('/api/placements/missions', this.form.value).subscribe({
+    const v = this.form.value;
+    const payload: any = { titre: v.titre, description: v.description };
+    if (v.competencesRequises) payload.competencesRequises = v.competencesRequises;
+    if (v.budget && v.budget > 0) payload.budget = v.budget;
+    if (v.dateLimite) payload.dateLimite = new Date(v.dateLimite + 'T00:00:00.000Z').toISOString();
+
+    this.http.post('/api/placements/missions', payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Mission publiée avec succès'); this.router.navigate(['/marketplace/missions']); },
-      error: () => { this.loading.set(false); this.toast.error('Erreur lors de l\'enregistrement'); },
+      error: err => { this.loading.set(false); this.toast.error(err.error?.error || 'Erreur lors de l\'enregistrement'); },
     });
   }
 }

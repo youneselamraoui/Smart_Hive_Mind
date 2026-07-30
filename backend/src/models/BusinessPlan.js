@@ -10,10 +10,10 @@ const assistanceSegmentSchema = new mongoose.Schema(
 
 const businessPlanSchema = new mongoose.Schema(
     {
+        titre: { type: String, trim: true },
         projetId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Projet",
-            required: true,
         },
         modeleEconomique: { type: String, trim: true },
         budget: { type: Number, min: 0 },

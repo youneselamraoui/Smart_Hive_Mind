@@ -39,7 +39,7 @@ import { Component, Input } from '@angular/core';
     }
     .hex-seal:hover {
       transform: rotate(3deg);
-      filter: drop-shadow(0 4px 12px rgba(217,160,43,0.35));
+      filter: drop-shadow(0 4px 12px rgba(91,79,224,0.30));
     }
     .hex-shape {
       position: absolute;
@@ -50,7 +50,7 @@ import { Component, Input } from '@angular/core';
     }
     .hex--ancre .hex-border,
     .hex--valide .hex-border { color: var(--verify-500, #1F9E6D); }
-    .hex--en_attente .hex-border { color: var(--honey-500, #D9A02B); }
+    .hex--en_attente .hex-border { color: var(--honey-500, #5B4FE0); }
     .hex--echec .hex-border { color: var(--alert-500, #C4432E); }
     .hex-icon {
       position: relative;
@@ -61,7 +61,7 @@ import { Component, Input } from '@angular/core';
     .hex-icon :deep(svg) { width: 100%; height: 100%; }
     .hex--ancre .hex-icon,
     .hex--valide .hex-icon { color: var(--verify-500, #1F9E6D); }
-    .hex--en_attente .hex-icon { color: var(--honey-500, #D9A02B); }
+    .hex--en_attente .hex-icon { color: var(--honey-500, #5B4FE0); }
     .hex--echec .hex-icon { color: var(--alert-500, #C4432E); }
     .hex-hash {
       position: absolute;

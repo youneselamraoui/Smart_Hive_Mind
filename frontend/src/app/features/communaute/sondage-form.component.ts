@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -25,7 +26,7 @@ import { ToastService } from '../../core/toast.service';
           <div class="field">
             <label>Options</label>
             <div formArrayName="options">
-              @for (opt of options.controls; track i; let i = $index) {
+              @for (opt of options.controls; track opt; let i = $index) {
                 <div class="opt-row">
                   <input class="input" [formControlName]="i" type="text" placeholder="Option {{ i + 1 }}" />
                   <button type="button" class="opt-remove" (click)="removeOption(i)" [disabled]="options.length <= 2">&times;</button>
@@ -69,11 +70,12 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline:hover { border-color: var(--ink-700); }
   `]
 })
-export class SondageFormComponent {
+export class SondageFormComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   public router = inject(Router);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
+  private destroy$ = new Subject<void>();
   loading = signal(false);
   form = this.fb.nonNullable.group({
     question: ['', Validators.required],
@@ -85,6 +87,8 @@ export class SondageFormComponent {
 
   get options() { return this.form.get('options') as FormArray; }
 
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
   addOption() { this.options.push(this.fb.nonNullable.control('', Validators.required)); }
   removeOption(i: number) { this.options.removeAt(i); }
 
@@ -92,6 +96,7 @@ export class SondageFormComponent {
     if (this.form.invalid) return;
     this.loading.set(true);
     this.http.post('/api/communaute/sondages', { question: this.form.value.question, options: this.form.value.options })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => { this.toast.success('Sondage créé'); this.router.navigate(['/communaute/sondages']); },
         error: () => { this.loading.set(false); this.toast.error('Erreur'); },

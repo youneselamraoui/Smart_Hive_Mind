@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 function similarityGauge(pct: number): string {
@@ -110,6 +111,9 @@ export class AnalyzeTextComponent {
   router = inject(Router);
   loading = signal(false);
   result = signal<any>(null);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   form = this.fb.nonNullable.group({
     texte: ['', Validators.required],
@@ -121,7 +125,7 @@ export class AnalyzeTextComponent {
     if (this.form.invalid) return;
     this.loading.set(true);
     this.result.set(null);
-    this.http.post<any>('/api/ai/analyze-text', { texte: this.form.value.texte }).subscribe({
+    this.http.post<any>('/api/ai/analyze-text', { texte: this.form.value.texte }).pipe(takeUntil(this.destroy$)).subscribe({
       next: res => { this.result.set(res); this.loading.set(false); this.toast.success('Analyse terminée.'); },
       error: () => { this.loading.set(false); this.toast.error('Erreur.'); },
     });

@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -65,6 +66,9 @@ export class SujetFormComponent {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   loading = signal(false);
+  private destroy$ = new Subject<void>();
+
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
   form = this.fb.nonNullable.group({
     titre: ['', Validators.required],
     contenu: ['', Validators.required],
@@ -78,7 +82,7 @@ export class SujetFormComponent {
       titre: this.form.value.titre,
       contenu: this.form.value.contenu,
       tags: this.form.value.tags ? this.form.value.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Sujet publié'); this.router.navigate(['/communaute/sujets']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur'); },
     });

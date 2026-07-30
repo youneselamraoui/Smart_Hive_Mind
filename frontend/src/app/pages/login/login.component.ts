@@ -3,7 +3,6 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { fadeInUp } from '../../core/animations';
-import { ICONS } from '../../core/icons';
 
 @Component({
   selector: 'app-login',
@@ -17,14 +16,25 @@ export class LoginComponent {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  protected readonly ICONS = ICONS;
-
   email = '';
   password = '';
   error = '';
   loading = false;
+  submitted = false;
+
+  get emailInvalid(): boolean {
+    if (!this.submitted) return false;
+    return !this.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
+  }
+
+  get passwordInvalid(): boolean {
+    if (!this.submitted) return false;
+    return !this.password || this.password.length < 6;
+  }
 
   login() {
+    this.submitted = true;
+    if (this.emailInvalid || this.passwordInvalid) return;
     this.error = '';
     this.loading = true;
     this.http.post<any>('/api/auth/connexion', { email: this.email, motDePasse: this.password })

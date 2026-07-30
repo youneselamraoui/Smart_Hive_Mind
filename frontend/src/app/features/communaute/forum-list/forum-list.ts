@@ -48,7 +48,7 @@ function hashStr(s: string): number {
 
               <div class="etagere-thematiques">
                 @for (t of (forum.thematiques || []).slice(0, 4); track t._id) {
-                  <a class="thema-chip" [routerLink]="['/communaute/sujets', t._id]">{{ t.nom }}</a>
+                  <a class="thema-chip" [routerLink]="['/communaute/sujets']" [queryParams]="{ thematiqueId: t._id }">{{ t.nom }}</a>
                 }
                 @if ((forum.thematiques?.length || 0) > 4) {
                   <span class="thema-more">+{{ forum.thematiques.length - 4 }}</span>

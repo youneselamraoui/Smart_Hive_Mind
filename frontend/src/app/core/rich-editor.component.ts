@@ -92,11 +92,11 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterVie
       color: var(--color-text);
     }
     .editor-content:focus {
-      box-shadow: inset 0 0 0 2px var(--color-primary-blue, #3b82f6);
+      box-shadow: inset 0 0 0 2px var(--color-primary-blue, #5B4FE0);
     }
     .editor-content:empty::before {
       content: attr(placeholder);
-      color: var(--color-text-secondary, #9ca3af);
+      color: var(--color-text-secondary, #6E7491);
       pointer-events: none;
     }
   `]

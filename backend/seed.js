@@ -76,7 +76,7 @@ const some = (items, min = 1, max = 3) => faker.helpers.arrayElements(items, { m
 const amount = (min, max) => faker.number.float({ min, max, fractionDigits: 2 });
 const futureDate = (days = 180) => faker.date.soon({ days });
 const pastDate = (days = 90) => faker.date.recent({ days });
-const url = (path = "ressource") => `https://example.test/${path}/${faker.string.alphanumeric(12)}`;
+const url = (path = "ressource") => `https://smart-hive.local/${path}/${faker.string.alphanumeric(12)}`;
 const text = () => faker.lorem.paragraphs({ min: 1, max: 3 });
 const insert = async (name, Model, documents, summary) => {
   const created = await Model.insertMany(documents);
@@ -94,7 +94,7 @@ async function seed() {
   const membres = await insert("Membre", Membre, Array.from({ length: COUNTS.membres }, () => {
     const prenom = faker.person.firstName();
     const nom = faker.person.lastName();
-    return { email: `${prenom}.${nom}.${faker.string.uuid()}@example.test`.toLowerCase(), motDePasse: SEEDED_PASSWORD_HASH, nom, prenom, role: one(choices.role), reputationScore: faker.number.int({ min: 0, max: 100 }) };
+    return { email: `${prenom}.${nom}.${faker.string.uuid()}@smart-hive.local`.toLowerCase(), motDePasse: SEEDED_PASSWORD_HASH, nom, prenom, role: one(choices.role), reputationScore: faker.number.int({ min: 0, max: 100 }) };
   }), summary);
 
   const publications = await insert("Publication", Publication, Array.from({ length: COUNTS.publications }, () => ({

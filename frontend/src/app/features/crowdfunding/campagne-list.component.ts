@@ -8,8 +8,8 @@ interface Campagne {
   _id: string;
   titre: string;
   description: string;
-  objectif: number;
-  collecte: number;
+  objectifFinancier: number;
+  fondsCollectes: number;
   dateFin: string;
   statut: string;
 }
@@ -49,10 +49,10 @@ interface Campagne {
               <h3>{{ c.titre }}</h3>
               <p class="desc">{{ c.description }}</p>
               <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="c.objectif > 0 ? (c.collecte / c.objectif * 100) : 0"></div>
+                <div class="progress-fill" [style.width.%]="c.objectifFinancier > 0 ? (c.fondsCollectes / c.objectifFinancier * 100) : 0"></div>
               </div>
               <div class="stats">
-                <span>{{ c.collecte | number }} / {{ c.objectif | number }} FCFA</span>
+                <span>{{ (c.fondsCollectes ?? 0) | number }} / {{ (c.objectifFinancier ?? 0) | number }} FCFA</span>
                 <span class="statut-badge" [class]="'statut-' + c.statut">{{ c.statut }}</span>
               </div>
             </a>

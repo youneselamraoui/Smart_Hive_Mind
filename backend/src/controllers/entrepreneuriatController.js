@@ -124,23 +124,78 @@ exports.promoteToProjet = async (req, res) => {
  * Generer un BusinessPlan via l'IA conversationnelle (assist-writing).
  * Enregistre les segments dans assistanceDetails pour tracer l'apport IA.
  */
+exports.listBusinessPlans = async (req, res) => {
+    try {
+        const filter = req.query.projetId ? { projetId: req.query.projetId } : {};
+        const items = await BusinessPlan.find(filter).sort({ createdAt: -1 });
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne." });
+    }
+};
+
+exports.getBusinessPlan = async (req, res) => {
+    try {
+        const bp = await BusinessPlan.findById(req.params.id);
+        if (!bp) return res.status(404).json({ error: "Business plan introuvable." });
+        res.json(bp);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne." });
+    }
+};
+
+exports.createBusinessPlan = async (req, res) => {
+    try {
+        const { titre, modeleEconomique, budgetGlobal, previsionsFinancieres } = req.body;
+        const bp = await BusinessPlan.create({
+            titre,
+            modeleEconomique,
+            budget: budgetGlobal,
+            previsions: previsionsFinancieres,
+        });
+        res.status(201).json(bp);
+    } catch (err) {
+        if (err.name === "ValidationError") return res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Erreur interne." });
+    }
+};
+
+exports.updateBusinessPlan = async (req, res) => {
+    try {
+        const { titre, modeleEconomique, budgetGlobal, previsionsFinancieres } = req.body;
+        const bp = await BusinessPlan.findByIdAndUpdate(
+            req.params.id,
+            { titre, modeleEconomique, budget: budgetGlobal, previsions: previsionsFinancieres },
+            { new: true, runValidators: true }
+        );
+        if (!bp) return res.status(404).json({ error: "Business plan introuvable." });
+        res.json(bp);
+    } catch (err) {
+        if (err.name === "ValidationError") return res.status(400).json({ error: err.message });
+        res.status(500).json({ error: "Erreur interne." });
+    }
+};
+
 exports.generateBusinessPlan = async (req, res) => {
     try {
         const { projetId, contenu } = req.body;
 
-        const projet = await Projet.findById(projetId).populate("ideeId", "titre description");
-        if (!projet) {
-            return res.status(404).json({ error: "Projet introuvable." });
+        let contexte = { titre: "Business Plan", description: "", objectifs: [] };
+        let projetRef = null;
+
+        if (projetId) {
+            const projet = await Projet.findById(projetId).populate("ideeId", "titre description");
+            if (!projet) return res.status(404).json({ error: "Projet introuvable." });
+            contexte = {
+                titre: projet.ideeId?.titre || projet._id,
+                description: projet.ideeId?.description || "",
+                objectifs: projet.objectifs || [],
+            };
+            projetRef = projet._id;
         }
 
-        const data = {
-            type: "business_plan",
-            segments: [
-                { text: contenu, source: "utilisateur" },
-            ],
-        };
-
         let assistanceSegments = [{ segment: contenu, source: "utilisateur" }];
+        let iaReponse = null;
 
         try {
             const iaRes = await fetchWithTimeout(
@@ -151,29 +206,23 @@ exports.generateBusinessPlan = async (req, res) => {
                     body: JSON.stringify({
                         brouillon: contenu,
                         type: "business_plan",
-                        contexte: {
-                            titre: projet.ideeId?.titre || projet._id,
-                            description: projet.ideeId?.description || "",
-                            objectifs: projet.objectifs,
-                        },
+                        contexte,
                     }),
                 }
             );
 
             if (iaRes.ok) {
-                data.ia = await iaRes.json();
-                if (data.ia.segments) {
-                    for (const seg of data.ia.segments) {
+                const data = await iaRes.json();
+                iaReponse = data;
+                if (data.segments) {
+                    for (const seg of data.segments) {
                         assistanceSegments.push({
                             segment: seg.text || seg,
                             source: seg.source || "ia",
                         });
                     }
-                } else if (data.ia.reponse) {
-                    assistanceSegments.push({
-                        segment: data.ia.reponse,
-                        source: "ia",
-                    });
+                } else if (data.reponse) {
+                    assistanceSegments.push({ segment: data.reponse, source: "ia" });
                 }
             }
         } catch {
@@ -181,8 +230,8 @@ exports.generateBusinessPlan = async (req, res) => {
         }
 
         const businessPlan = await BusinessPlan.create({
-            projetId: projet._id,
-            modeleEconomique: "",
+            ...(projetRef ? { projetId: projetRef } : {}),
+            modeleEconomique: iaReponse?.reponse || "",
             budget: 0,
             previsions: "",
             version: "1.0.0",
@@ -257,6 +306,32 @@ exports.contributeToCampaign = async (req, res) => {
                     100,
             },
         });
+    } catch (err) {
+        if (err.name === "ValidationError") {
+            return res.status(400).json({ error: err.message });
+        }
+        res.status(500).json({ error: "Erreur interne du serveur." });
+    }
+};
+
+/**
+ * Creer une campagne de crowdfunding.
+ */
+exports.createCampagne = async (req, res) => {
+    try {
+        const { titre, description, objectif, dateFin } = req.body;
+
+        const dureeJours = Math.max(1, Math.ceil((new Date(dateFin) - new Date()) / 86400000));
+
+        const campagne = await CampagneCrowdfunding.create({
+            titre,
+            description,
+            objectifFinancier: objectif,
+            dureeJours,
+            statut: dureeJours > 0 ? "active" : "terminee",
+        });
+
+        res.status(201).json(campagne);
     } catch (err) {
         if (err.name === "ValidationError") {
             return res.status(400).json({ error: err.message });

@@ -5,16 +5,19 @@ const ModeleIA = require("../models/ModeleIA");
 const Atelier = require("../models/Atelier");
 
 const AI_AGENTIC_URL = process.env.AI_AGENTIC_URL || "http://ai-agentic:8000";
+const AI_CONVERSATIONAL_URL = process.env.IA_CONVERSATIONAL_URL || "http://ai-conversational:8000";
+const AI_DECISIONNEL_URL = process.env.IA_DECISIONNEL_URL || "http://ai-decisionnel:8000";
+const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL || "http://backend:3000";
 const ATELIER_TIMEOUT_MS = 30000;
 
 const ATELIER_DEFINITIONS = {
     "ia-neuro-symbolique": {
         nom: "Atelier IA neuro-symbolique",
         etapesDefinition: [
-            { label: "Sélection des données", url: "http://ai-conversational:8000/conversational/assist-writing", method: "POST", payload: {} },
-            { label: "Génération synthétique", url: "http://ai-conversational:8000/conversational/generate", method: "POST", payload: {} },
-            { label: "Entraînement du modèle", url: "http://ai-decisionnel:8000/decisionnel/score-publication", method: "POST", payload: {} },
-            { label: "Publication du modèle", url: `http://backend:3000/api/smart-tools/models`, method: "POST", payload: {} },
+            { label: "Sélection des données", url: `${AI_CONVERSATIONAL_URL}/conversational/assist-writing`, method: "POST", payload: {} },
+            { label: "Génération synthétique", url: `${AI_CONVERSATIONAL_URL}/conversational/generate`, method: "POST", payload: {} },
+            { label: "Entraînement du modèle", url: `${AI_DECISIONNEL_URL}/decisionnel/score-publication`, method: "POST", payload: {} },
+            { label: "Publication du modèle", url: `${BACKEND_INTERNAL_URL}/api/smart-tools/models`, method: "POST", payload: {} },
         ],
     },
 };
@@ -73,12 +76,22 @@ exports.downloadDataset = async (req, res) => {
             return res.status(404).json({ error: "Jeu de donnees introuvable." });
         }
 
+        if (!dataset.fichierUrl) {
+            return res.status(404).json({ error: "Ce fichier n'est pas disponible pour le moment." });
+        }
+
+        let fileId;
+        try {
+            fileId = new mongoose.Types.ObjectId(dataset.fichierUrl);
+        } catch {
+            return res.status(404).json({ error: "Ce fichier n'est pas disponible pour le moment." });
+        }
+
         const bucket = getBucket();
-        const fileId = new mongoose.Types.ObjectId(dataset.fichierUrl);
         const files = await bucket.find({ _id: fileId }).toArray();
 
         if (!files || files.length === 0) {
-            return res.status(404).json({ error: "Fichier introuvable dans GridFS." });
+            return res.status(404).json({ error: "Ce fichier n'est pas disponible pour le moment." });
         }
 
         const file = files[0];
@@ -87,10 +100,12 @@ exports.downloadDataset = async (req, res) => {
         res.set("Content-Length", file.length.toString());
 
         const stream = bucket.openDownloadStream(fileId);
-        stream.pipe(res);
         stream.on("error", () => {
-            res.status(500).json({ error: "Erreur lors du telechargement." });
+            if (!res.headersSent) {
+                res.status(500).json({ error: "Erreur lors du telechargement." });
+            }
         });
+        stream.pipe(res);
     } catch (err) {
         res.status(500).json({ error: "Erreur interne du serveur." });
     }

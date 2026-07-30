@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
 
 @Component({
@@ -63,11 +64,12 @@ import { ToastService } from '../../core/toast.service';
     .btn-outline:hover { border-color: var(--ink-700); }
   `]
 })
-export class FormationFormComponent {
+export class FormationFormComponent implements OnDestroy {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   router = inject(Router);
+  private destroy$ = new Subject<void>();
   loading = signal(false);
 
   form = this.fb.nonNullable.group({
@@ -77,10 +79,12 @@ export class FormationFormComponent {
     duree: [''],
   });
 
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
   save() {
     if (this.form.invalid) return;
     this.loading.set(true);
-    this.http.post('/api/skills/formations', this.form.value).subscribe({
+    this.http.post('/api/skills/formations', this.form.value).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => { this.toast.success('Formation créée.'); this.router.navigate(['/skills/formations']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur.'); },
     });
