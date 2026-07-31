@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const preuveSchema = require("./schemas/preuveSchema");
 
 const commentaireSchema = new mongoose.Schema(
     {
@@ -21,6 +22,7 @@ const ideeSchema = new mongoose.Schema(
             enum: ["proposee", "en_projet"],
             default: "proposee",
         },
+        preuve: { type: preuveSchema, default: () => ({}) },
     },
     { timestamps: true }
 );

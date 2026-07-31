@@ -62,4 +62,67 @@ async function anchorContent(contenu) {
     }
 }
 
-module.exports = { anchorContent, BLOCKCHAIN_SERVICE_URL, TIMEOUT_MS };
+/**
+ * Ancrer une entite de n'importe quel type sur la blockchain.
+ * @param {"publication"|"contribution"|"idee"} typeEntite
+ * @param {string} entiteId - _id de l'entite
+ * @param {string} contenu - contenu a hasher et ancrer
+ * @returns {Promise<{hashContenu, preuve}>}
+ */
+async function anchorEntity(typeEntite, entiteId, contenu) {
+    const { hashContenu, preuve } = await anchorContent(contenu);
+    const preuveAvecType = { ...preuve, typeEntite };
+
+    // Le type "livrable" n'est pas encore dans ModelMap car aucun modele Livrable dedie n'existe.
+    // Lorsqu'il sera cree, l'ajouter ici et dans l'enum de preuveSchema.js.
+    const ModelMap = {
+        publication: require("../models/Publication"),
+        contribution: require("../models/TacheCrowdsourcing"),
+        idee: require("../models/Idee"),
+    };
+
+    const Model = ModelMap[typeEntite];
+    if (!Model) {
+        const err = new Error("Type d'entite inconnu pour l'ancrage blockchain.");
+        err.status = 400;
+        throw err;
+    }
+
+    const updateFields = { preuve: preuveAvecType };
+    if (typeEntite === "publication") {
+        updateFields.hashContenu = hashContenu;
+    }
+
+    const updateResult = await Model.findByIdAndUpdate(
+        entiteId,
+        updateFields,
+        { new: true, runValidators: true }
+    );
+
+    if (!updateResult) {
+        const err = new Error("Entite introuvable pour l'ancrage blockchain.");
+        err.status = 404;
+        throw err;
+    }
+
+    if (typeEntite === "publication") {
+        const ProfilCertifie = require("../models/ProfilCertifie");
+        const auteurId = updateResult.auteur;
+        if (auteurId) {
+            const profilPubs = await ProfilCertifie.findOneAndUpdate(
+                { membreId: auteurId },
+                { $addToSet: { oeuvresProuvees: { publicationId: entiteId } } }
+            );
+            if (!profilPubs) {
+                await ProfilCertifie.create({
+                    membreId: auteurId,
+                    oeuvresProuvees: [{ publicationId: entiteId }],
+                });
+            }
+        }
+    }
+
+    return { hashContenu, preuve: preuveAvecType };
+}
+
+module.exports = { anchorContent, anchorEntity, BLOCKCHAIN_SERVICE_URL, TIMEOUT_MS };

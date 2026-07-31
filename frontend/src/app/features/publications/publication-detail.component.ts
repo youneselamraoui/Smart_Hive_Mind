@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { HexSealComponent } from '../../core/hex-seal.component';
 import { ToastService } from '../../core/toast.service';
+import { JournalService } from '../journal/journal.service';
 
 @Component({
   selector: 'app-publication-detail',
@@ -115,7 +116,33 @@ import { ToastService } from '../../core/toast.service';
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
                 {{ evaluating() ? 'Évaluation…' : 'Évaluer par IA' }}
               </button>
+              @if (((p?.auteur?._id || p?.auteur) === currentUserId) || currentRole() === 'admin') {
+                <button class="btn btn-outline" (click)="toggleJournalSelect()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  Soumettre à un journal
+                </button>
+              }
             </div>
+
+            @if (journalSelectOpen()) {
+              <div class="journal-submit">
+                <select class="journal-select" [value]="selectedJournalId()" (change)="onJournalChange($event)">
+                  <option value="">Choisir un journal…</option>
+                  @for (j of journaux(); track j._id) {
+                    <option [value]="j._id">{{ j.nom }}</option>
+                  }
+                </select>
+                <button class="btn btn-agentic" [disabled]="!selectedJournalId() || submitting()" (click)="soumettreAuJournal()">
+                  {{ submitting() ? 'Soumission…' : 'Soumettre' }}
+                </button>
+                @if (soumissionError()) {
+                  <div class="side-result side-result--error">{{ soumissionError() }}</div>
+                }
+                @if (soumissionOk()) {
+                  <div class="side-result side-result--success">{{ soumissionOk() }}</div>
+                }
+              </div>
+            }
 
             <!-- Verify result -->
             @if (verifyResult()) {
@@ -213,6 +240,10 @@ import { ToastService } from '../../core/toast.service';
     .side-result { font-size: var(--text-sm); padding: 10px 14px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 8px; }
     .side-result--success { color: var(--verify-500); background: rgba(31,158,109,0.06); }
     .side-result--error { color: var(--alert-500); background: rgba(196,67,46,0.06); }
+
+    .journal-submit { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line-200); border-radius: var(--radius-md); background: var(--color-surface); }
+    .journal-select { padding: 8px 12px; border: 1.5px solid var(--line-200); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); background: var(--color-surface); color: var(--ink-900); outline: none; }
+    .journal-select:focus { border-color: var(--honey-500); }
   `]
 })
 export class PublicationDetailComponent implements OnInit {
@@ -220,6 +251,7 @@ export class PublicationDetailComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private journalService = inject(JournalService);
   loading = signal(true);
   pub = signal<any>(null);
   verifying = signal(false);
@@ -228,7 +260,14 @@ export class PublicationDetailComponent implements OnInit {
   verifyError = signal<string | null>(null);
   evalResult = signal<any>(null);
   evalError = signal<string | null>(null);
+  journalSelectOpen = signal(false);
+  journaux = signal<any[]>([]);
+  selectedJournalId = signal('');
+  submitting = signal(false);
+  soumissionError = signal<string | null>(null);
+  soumissionOk = signal<string | null>(null);
   currentUserId = localStorage.getItem('membreId') || '';
+  currentRole = signal<string | null>(null);
 
   evalIcons = {
     pairs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
@@ -242,6 +281,10 @@ export class PublicationDetailComponent implements OnInit {
     this.http.get<any>('/api/publications/' + id).subscribe({
       next: p => { this.pub.set(p); this.loading.set(false); },
       error: () => this.loading.set(false),
+    });
+    this.http.get<{ role: string }>('/api/auth/me').subscribe({
+      next: m => this.currentRole.set(m.role),
+      error: () => this.currentRole.set(null),
     });
   }
 
@@ -292,6 +335,41 @@ export class PublicationDetailComponent implements OnInit {
     this.http.post<any>('/api/publications/' + id + '/evaluate-ia', {}).subscribe({
       next: r => { this.evalResult.set(r); this.evaluating.set(false); },
       error: e => { this.evalError.set(e.error?.error || 'Erreur d\'évaluation'); this.evaluating.set(false); },
+    });
+  }
+
+  toggleJournalSelect() {
+    this.journalSelectOpen.update(v => !v);
+    this.soumissionError.set(null);
+    this.soumissionOk.set(null);
+    if (this.journalSelectOpen() && this.journaux().length === 0) {
+      this.journalService.list().subscribe({
+        next: list => this.journaux.set(list),
+        error: () => this.soumissionError.set('Impossible de charger les journaux.'),
+      });
+    }
+  }
+
+  onJournalChange(event: Event) {
+    this.selectedJournalId.set((event.target as HTMLSelectElement).value);
+  }
+
+  soumettreAuJournal() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id || !this.selectedJournalId()) return;
+    this.submitting.set(true);
+    this.soumissionError.set(null);
+    this.soumissionOk.set(null);
+    this.journalService.soumettrePublication(id, this.selectedJournalId()).subscribe({
+      next: () => {
+        this.soumissionOk.set('Publication soumise au journal.');
+        this.submitting.set(false);
+        this.journalSelectOpen.set(false);
+      },
+      error: e => {
+        this.soumissionError.set(e.error?.error || 'Erreur lors de la soumission.');
+        this.submitting.set(false);
+      },
     });
   }
 }

@@ -6,6 +6,7 @@ volumes:
   loki-data:
   uptime-kuma-data:
   backup-data:
+  chroma-data:
 
 networks:
   shm-network:
@@ -203,6 +204,9 @@ services:
     environment:
       - MONGODB_URI=${MONGO_URI}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHROMA_PERSIST_DIR=/data/chroma
+    volumes:
+      - chroma-data:/data/chroma
     depends_on:
       mongo:
         condition: service_healthy

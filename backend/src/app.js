@@ -14,6 +14,11 @@ const prestationRoutes = require("./routes/prestationRoutes");
 const marketplaceRoutes = require("./routes/marketplaceRoutes");
 const badgeRoutes = require("./routes/badgeRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const journalRoutes = require("./routes/journalRoutes");
+const structureRechercheRoutes = require("./routes/structureRechercheRoutes");
+const projetRechercheFinanceRoutes = require("./routes/projetRechercheFinanceRoutes");
+const preuveRoutes = require("./routes/preuveRoutes");
+const atelierNeuroSymboliqueRoutes = require("./routes/atelierNeuroSymboliqueRoutes");
 
 const app = express();
 
@@ -33,5 +38,10 @@ app.use("/api", prestationRoutes);
 app.use("/api", marketplaceRoutes);
 app.use("/api", badgeRoutes);
 app.use("/api", notificationRoutes);
+app.use("/api", journalRoutes);
+app.use("/api", structureRechercheRoutes);
+app.use("/api", projetRechercheFinanceRoutes);
+app.use("/api", preuveRoutes);
+app.use("/api", atelierNeuroSymboliqueRoutes);
 
 module.exports = app;

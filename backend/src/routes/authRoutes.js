@@ -24,6 +24,11 @@ router.get("/membres", async (req, res) => {
     }
 });
 
+// Route protegee car le profil certifie contient des donnees semi-sensibles
+// (evaluationClient, historique de missions). Seuls les membres authentifies
+// peuvent consulter le profil certifie d'un pair.
+router.get("/membres/:id/profil-certifie", auth, ctrl.getProfilCertifie);
+
 router.get("/membres/:id", async (req, res) => {
     try {
         const item = await Membre.findById(req.params.id).select("-motDePasse");

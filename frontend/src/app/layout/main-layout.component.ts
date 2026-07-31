@@ -52,6 +52,7 @@ export class MainLayoutComponent implements OnInit {
       name: 'Publications',
       items: [
         { label: 'Publications', route: '/publications', iconClass: 'pi pi-file' },
+        { label: 'Journaux', route: '/journaux', iconClass: 'pi pi-book' },
       ],
     },
     {
@@ -91,6 +92,13 @@ export class MainLayoutComponent implements OnInit {
       name: 'Carrière',
       items: [
         { label: 'Placements', route: '/placements', iconClass: 'pi pi-briefcase' },
+      ],
+    },
+    {
+      name: 'Recherche',
+      items: [
+        { label: 'Structures de recherche', route: '/structures-recherche', iconClass: 'pi pi-building' },
+        { label: 'Projets financés', route: '/projets-recherche', iconClass: 'pi pi-wallet' },
       ],
     },
     {
