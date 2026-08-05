@@ -45,7 +45,7 @@ import { ToastService } from '../../core/toast.service';
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn-outline" (click)="router.navigate(['/marketplace/taches-crowdsourcing'])">Annuler</button>
+            <button type="button" class="btn-outline" (click)="router.navigate(['/marketplace'])">Annuler</button>
             <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
               {{ loading() ? 'Enregistrement…' : 'Publier la tâche' }}
             </button>
@@ -99,7 +99,7 @@ export class TacheCrowdsourcingFormComponent implements OnDestroy {
     this.loading.set(true);
 
     this.http.post('/api/taches-crowdsourcing', this.form.value).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.toast.success('Tâche publiée avec succès'); this.router.navigate(['/marketplace/taches-crowdsourcing']); },
+      next: () => { this.toast.success('Tâche publiée avec succès'); this.router.navigate(['/marketplace']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur lors de l\'enregistrement'); },
     });
   }

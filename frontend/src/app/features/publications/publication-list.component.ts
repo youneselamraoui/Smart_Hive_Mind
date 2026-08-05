@@ -3,29 +3,14 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { HexSealComponent } from '../../core/hex-seal.component';
+import { IdenticonComponent } from '../../core/identicon.component';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmDialogService } from '../../core/confirm-dialog.service';
-
-function identiconSvg(id: string, name: string): string {
-  let hash = 0;
-  const str = id || name;
-  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-  const hue = Math.abs(hash % 360);
-  const cells: string[] = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const ci = r * 4 + (c < 2 ? c : 3 - c);
-      const on = ((hash >> (ci % 16)) & 1) === 1;
-      if (on) cells.push(`<rect x="${c * 5 + 2}" y="${r * 5 + 2}" width="5" height="5" rx="1" fill="hsl(${hue},40%,${50 + (ci % 3) * 12}%)" opacity="0.8"/>`);
-    }
-  }
-  return `<svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">${cells.join('')}</svg>`;
-}
 
 @Component({
   selector: 'app-publication-list',
   standalone: true,
-  imports: [RouterLink, DatePipe, HexSealComponent],
+  imports: [RouterLink, DatePipe, HexSealComponent, IdenticonComponent],
   template: `
     <div class="page">
       <div class="page-head">
@@ -57,7 +42,7 @@ function identiconSvg(id: string, name: string): string {
                 <span class="pub-type" [class]="'type--' + (pub.type || 'libre')">{{ pub.type }}</span>
               </div>
               <div class="pub-meta">
-                <span class="pub-author" [innerHTML]="identicon(pub)"></span>
+                <span class="pub-author"><app-identicon [id]="pub.auteur?._id || ''" [name]="(pub.auteur?.prenom || '') + (pub.auteur?.nom || '')" [size]="20"></app-identicon></span>
                 <span class="pub-author-name">{{ pub.auteur?.prenom || pub.auteur?.email || 'Inconnu' }} {{ pub.auteur?.nom || '' }}</span>
                 <span class="pub-date">{{ pub.createdAt | date:'dd MMM yyyy' }}</span>
               </div>
@@ -136,12 +121,6 @@ export class PublicationListComponent implements OnInit {
       error: () => this.publications.set([]),
       complete: () => this.loading.set(false),
     });
-  }
-
-  identicon(pub: any): string {
-    const id = pub.auteur?._id || pub.auteur || '';
-    const name = (pub.auteur?.prenom || '') + (pub.auteur?.nom || '');
-    return identiconSvg(id, name);
   }
 
   sealStatus(pub: any): 'valide' | 'en_attente' | 'echec' {

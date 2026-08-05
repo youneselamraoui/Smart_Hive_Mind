@@ -6,8 +6,8 @@ import math
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-EMBEDDING_MODEL = "gemini-embedding-001"
-LLM_MODEL = "gemini-2.5-flash"
+EMBEDDING_MODEL = os.environ.get("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")
+LLM_MODEL = os.environ.get("GEMINI_LLM_MODEL", "gemini-flash-latest")
 EMBEDDING_DIM = 768
 BATCH_SIZE = 25
 BATCH_PAUSE = 1.5

@@ -8,6 +8,7 @@ const projetSchema = new mongoose.Schema(
             required: true,
         },
         objectifs: [{ type: String, trim: true }],
+        porteurId: { type: mongoose.Schema.Types.ObjectId, ref: "Membre" },
         equipe: [{ type: mongoose.Schema.Types.ObjectId, ref: "Membre" }],
         feuilleDeRoute: { type: String, trim: true },
         statut: {

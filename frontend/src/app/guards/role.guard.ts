@@ -22,7 +22,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
       if (allowedRoles.includes(membre.role)) {
         return true;
       }
-      return router.parseUrl('/dashboard');
+      return router.parseUrl('/forbidden');
     }),
     catchError(() => of(router.parseUrl('/login'))),
   );

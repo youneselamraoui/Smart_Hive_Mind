@@ -1,8 +1,9 @@
 import os
+from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from src.rules import RuleEngine
-from src.ml_scorer import score_originalite
+from src_decisionnel.rules import RuleEngine
+from src_decisionnel.ml_scorer import score_originalite
 
 if not os.environ.get("GEMINI_API_KEY"):
     raise RuntimeError("GEMINI_API_KEY manquante")
@@ -61,3 +62,55 @@ async def score_publication(req: ScoreRequest):
             },
         },
     }
+
+
+class SoumissionData(BaseModel):
+    membreId: str
+    contenuUrl: str
+    dateSubmission: str | None = None
+    contenu: str | None = None  # texte optionnel : si fourni, score regles + ML
+
+
+class ClasserSoumissionsRequest(BaseModel):
+    titre: str
+    description: str
+    soumissions: list[SoumissionData]
+
+
+@app.post("/decisionnel/classer-soumissions")
+async def classer_soumissions(req: ClasserSoumissionsRequest):
+    if not req.soumissions:
+        raise HTTPException(status_code=400, detail="Aucune soumission a classer.")
+    for s in req.soumissions:
+        if not s.membreId or not s.contenuUrl:
+            raise HTTPException(
+                status_code=400,
+                detail="Chaque soumission doit avoir membreId et contenuUrl.",
+            )
+
+    now = datetime.now(timezone.utc)
+    classement = []
+    for s in req.soumissions:
+        score = 0.5  # neutre : pas de contenu textuel
+        if s.contenu and s.contenu.strip():
+            engine = RuleEngine(s.contenu)
+            regles = engine.evaluer("libre")
+            originalite = score_originalite(req.titre, s.contenu)
+            score = round(POIDS_REGLES * regles["rigueur"] + POIDS_ML * originalite, 4)
+        if s.dateSubmission:
+            try:
+                date = datetime.fromisoformat(s.dateSubmission.replace("Z", "+00:00"))
+                if date.tzinfo is None:
+                    date = date.replace(tzinfo=timezone.utc)
+                anciennete_sec = max(0, (now - date).total_seconds())
+                bonus = min(0.1, anciennete_sec / (7 * 24 * 3600) * 0.1)
+                score = round(min(1.0, score + bonus), 4)
+            except ValueError:
+                pass
+        classement.append({"membreId": s.membreId, "score": score, "rang": 0})
+
+    classement.sort(key=lambda c: c["score"], reverse=True)
+    for i, c in enumerate(classement):
+        c["rang"] = i + 1
+
+    return {"classement": classement, "recommande": classement[0]["membreId"]}

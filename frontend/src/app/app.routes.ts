@@ -24,6 +24,11 @@ export const routes: Routes = [
     title: 'Mot de passe oublié',
   },
   {
+    path: 'forbidden',
+    loadComponent: () => import('./pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent),
+    title: 'Accès refusé',
+  },
+  {
     path: 'app',
     component: MainLayoutComponent,
     canActivate: [authGuard],

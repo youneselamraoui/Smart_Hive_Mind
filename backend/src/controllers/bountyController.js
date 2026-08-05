@@ -1,4 +1,5 @@
 const Bounty = require("../models/Bounty");
+const Notification = require("../models/Notification");
 
 const IA_DECISIONNEL_URL =
     process.env.IA_DECISIONNEL_URL || "http://ai-decisionnel:8000";
@@ -94,9 +95,10 @@ exports.submitSolution = async (req, res) => {
 
 /**
  * Selectionner le gagnant d'une bounty.
- * Reserve a l'auteur de la bounty.
- * Avant la selection, l'IA decisionnelle classe les soumissions
- * (recommandation) ; l'auteur confirme manuellement son choix.
+ * Reserve a l'auteur de la bounty ou a un admin.
+ * L'IA decisionnelle classe les soumissions ; le gagnant est soit celui
+ * confirme dans le corps (gagnantId), soit le premier du classement IA.
+ * Une notification "bounty" est envoyee au gagnant.
  */
 exports.selectWinner = async (req, res) => {
     try {
@@ -105,9 +107,12 @@ exports.selectWinner = async (req, res) => {
             return res.status(404).json({ error: "Bounty introuvable." });
         }
 
-        if (bounty.publiePar.toString() !== req.membre.id) {
+        if (
+            bounty.publiePar.toString() !== req.membre.id &&
+            req.membre.role !== "admin"
+        ) {
             return res.status(403).json({
-                error: "Seul l'auteur de la bounty peut choisir le gagnant.",
+                error: "Seul l'auteur de la bounty ou un admin peut choisir le gagnant.",
             });
         }
 
@@ -119,9 +124,20 @@ exports.selectWinner = async (req, res) => {
             return res.status(400).json({ error: "Aucune soumission a classer." });
         }
 
-        const { gagnantId } = req.body;
+        // Appel a l'IA decisionnelle pour classer les soumissions
+        const classementIA = await classerSoumissions(bounty);
+
+        let gagnantId = req.body.gagnantId;
+        if (!gagnantId && classementIA && classementIA.recommande) {
+            gagnantId = classementIA.recommande;
+        }
+
         if (!gagnantId) {
-            return res.status(400).json({ error: "gagnantId requis." });
+            const raison =
+                classementIA && classementIA.erreur
+                    ? `IA indisponible (${classementIA.erreur}). Fournissez gagnantId.`
+                    : "gagnantId requis.";
+            return res.status(400).json({ error: raison });
         }
 
         const soumissionValide = bounty.soumissions.some(
@@ -133,16 +149,21 @@ exports.selectWinner = async (req, res) => {
                 .json({ error: "Ce membre n'a pas soumis de solution." });
         }
 
-        // Appel a l'IA decisionnelle pour classer les soumissions
-        const classementIA = await classerSoumissions(bounty);
-
         bounty.gagnantId = gagnantId;
         await bounty.save();
+
+        await Notification.create({
+            destinataire: gagnantId,
+            type: "bounty",
+            message: `Felicitations ! Votre solution a la bounty "${bounty.titre}" a ete selectionnee comme gagnante.`,
+            lien: `/marketplace/bounty/${bounty._id}`,
+        });
 
         res.json({
             message: "Gagnant selectionne.",
             gagnantId,
-            classementIA, // recommandation IA (l'humain a choisi seul)
+            classementIA, // recommandation IA
+            notificationEnvoyee: true,
         });
     } catch (err) {
         if (err.name === "ValidationError") {
@@ -186,7 +207,13 @@ async function classerSoumissions(bounty) {
         }
 
         const data = await response.json();
-        return data.classement || data;
+        if (data && Array.isArray(data)) {
+            return {
+                classement: data,
+                recommande: data[0] ? data[0].membreId : null,
+            };
+        }
+        return data;
     } catch (err) {
         return {
             recommande: null,

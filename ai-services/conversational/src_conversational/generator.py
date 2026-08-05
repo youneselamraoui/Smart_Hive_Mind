@@ -1,5 +1,5 @@
 import re
-from src.gemini_client import generate_completion
+from src_conversational.gemini_client import generate_completion
 
 SYSTEM_PROMPT_QA = (
     "Tu es un assistant specialise dans l'accompagnement de porteurs de projets "
@@ -28,6 +28,16 @@ def generate_answer(query: str, context_chunks: list[dict]) -> dict:
     )
     reponse = generate_completion(prompt, system=SYSTEM_PROMPT_QA)
     return {"reponse": reponse, "sources": [c["id"] for c in context_chunks]}
+
+
+def generate_contenu(prompt: str, type_texte: str, ton: str) -> dict:
+    system = (
+        "Tu es un generateur de contenu scientifique et academique. "
+        f"Produis un contenu de type '{type_texte}' avec un ton {ton}, "
+        "structure, complet et en francais UNIQUEMENT."
+    )
+    contenu = generate_completion(prompt, system=system)
+    return {"contenu": contenu, "type": type_texte, "ton": ton}
 
 
 def assist_writing(brouillon: str, type_texte: str) -> dict:

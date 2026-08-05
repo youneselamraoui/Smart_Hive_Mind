@@ -53,6 +53,7 @@ export class MainLayoutComponent implements OnInit {
       items: [
         { label: 'Publications', route: '/publications', iconClass: 'pi pi-file' },
         { label: 'Journaux', route: '/journaux', iconClass: 'pi pi-book' },
+        { label: 'Vérifier une preuve', route: '/publications/verify', iconClass: 'pi pi-shield' },
       ],
     },
     {
@@ -68,6 +69,8 @@ export class MainLayoutComponent implements OnInit {
       name: 'Smart Tools & IA',
       items: [
         { label: 'Smart Tools', route: '/smart-tools', iconClass: 'pi pi-cog' },
+        { label: 'Outils', route: '/smart-tools/outils', iconClass: 'pi pi-wrench' },
+        { label: 'Atelier neuro-symbolique', route: '/smart-tools/atelier-neuro-symbolique', iconClass: 'pi pi-cpu' },
         { label: 'IA', route: '/ai', iconClass: 'pi pi-bolt' },
         { label: 'Datasets', route: '/dataset', iconClass: 'pi pi-database' },
       ],
@@ -86,12 +89,15 @@ export class MainLayoutComponent implements OnInit {
       items: [
         { label: 'Entrepreneuriat', route: '/entrepreneuriat', iconClass: 'pi pi-chart-line' },
         { label: 'Crowdfunding', route: '/crowdfunding', iconClass: 'pi pi-credit-card' },
+        { label: 'Idées', route: '/entrepreneuriat/idees', iconClass: 'pi pi-lightbulb' },
       ],
     },
     {
       name: 'Carrière',
       items: [
         { label: 'Placements', route: '/placements', iconClass: 'pi pi-briefcase' },
+        { label: 'Mes candidatures', route: '/placements/candidatures', iconClass: 'pi pi-file-check' },
+        { label: 'Gérer les candidatures', route: '/placements/accepter-candidature', iconClass: 'pi pi-user-check', roles: ['encadrant', 'organisation', 'admin'] },
       ],
     },
     {

@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 const BADGE_ICONS: Record<string, string> = {
   innovateur: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.58-.68.91-1.55.91-2.5a4 4 0 0 0-8 0c0 .95.33 1.82.91 2.5"/><path d="M12 2v1"/><path d="M4.93 4.93l.71.71"/><path d="M2 12h1"/></svg>`,
@@ -26,7 +27,7 @@ const BADGE_COLORS: Record<string, { bg: string; fg: string }> = {
 @Component({
   selector: 'app-badge-attribuer',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, SafeHtmlPipe],
   template: `
     <div class="page">
       <div class="page-head"><div><h1>Attribuer un badge</h1></div></div>
@@ -78,7 +79,7 @@ const BADGE_COLORS: Record<string, { bg: string; fg: string }> = {
             <div class="preview-section">
               <span class="preview-section-title">Badges</span>
               <div class="preview-badge" [class.hidden]="!selectedType()" [style.background]="previewColor().bg" [style.color]="previewColor().fg">
-                <span class="preview-badge-icon" [innerHTML]="previewIcon()"></span>
+                <span class="preview-badge-icon" [innerHTML]="previewIcon() | safeHtml"></span>
                 <span class="preview-badge-label">{{ badgeLabel() }}</span>
               </div>
               @if (!selectedType()) {

@@ -1,0 +1,70 @@
+{
+  "_commentaire": "Corpus de publications seedees pour l'evaluation RAGAS du pipeline RAG (cahier des charges 5.7). Contenu deterministe avec des faits verifiables (chiffres, dates) permettant des reponses de reference stables.",
+  "publications": [
+    {
+      "id": "pub-1",
+      "titre": "Etude de faisabilite d'un incubateur universitaire a Casablanca",
+      "contenu": "L'etude de faisabilite d'un incubateur universitaire a Casablanca prevoit un investissement initial de 2,4 millions de MAD. L'incubateur doit heberger 120 startups sur trois ans, avec un accompagnement en mentorat et en financement d'amorcage. Le taux de survie attendu des startups incubees apres deux ans est de 78%, contre 48% pour les startups non accompagnees."
+    },
+    {
+      "id": "pub-2",
+      "titre": "Deep learning applique a la classification d'images medicales",
+      "contenu": "Cette recherche utilise un jeu de donnees de 10 000 radiographies divise en 80% pour l'entrainement et 20% pour le test. Un CNN base sur ResNet50 est entraine avec transfer learning pendant 50 epochs. Le modele atteint une precision de 94,5% sur l'ensemble de test, depassant les methodes traditionnelles comme SVM avec 82,1% et Random Forest avec 78,3%."
+    },
+    {
+      "id": "pub-3",
+      "titre": "Adoption de la blockchain dans les chaines logistiques marocaines",
+      "contenu": "Une enquete menee en 2024 aupres de 120 entreprises montre que 41% d'entre elles ont adopte la blockchain dans leur chaine logistique. La technologie majoritairement utilisee est Hyperledger Fabric. Les entreprises adoptantes rapportent une reduction moyenne de 23% de leurs couts logistiques et une tracabilite amelioree de bout en bout."
+    },
+    {
+      "id": "pub-4",
+      "titre": "Crowdsourcing et innovation ouverte : analyse comparative",
+      "contenu": "L'analyse comparative de 15 plateformes de crowdsourcing montre que la motivation intrinseque represente 67% des motivations des contributeurs, devant la remuneration. Le processus d'innovation ouverte se decompose en cinq phases : formulation, diffusion, contribution, evaluation et integration. Les plateformes les plus performantes combinent systemes de reputation et feedback rapide."
+    },
+    {
+      "id": "pub-5",
+      "titre": "Les determinants du financement participatif au Maroc",
+      "contenu": "L'etude porte sur 200 campagnes de financement participatif lancees au Maroc entre 2021 et 2023. 63% des campagnes reussies ont collecte moins de 100 000 MAD. La duree moyenne d'une campagne reussie est de 45 jours. Les campagnes avec contreparties materielles ont 2,3 fois plus de chances de succes que celles sans contrepartie."
+    },
+    {
+      "id": "pub-6",
+      "titre": "L'IA neuro-symbolique pour le diagnostic assiste",
+      "contenu": "L'IA neuro-symbolique hybride l'apprentissage par reseaux de neurones avec le raisonnement symbolique a base de regles. Appliquee au diagnostic assiste, elle ameliore la precision de 12% par rapport a un reseau de neurones seul. Elle garantit aussi l'explicabilite des decisions, chaque conclusion etant justifiable par des regles interpretables."
+    },
+    {
+      "id": "pub-7",
+      "titre": "Le teletravail dans l'enseignement superieur apres 2020",
+      "contenu": "Une enquete realisee aupres de 450 enseignants-chercheurs montre que 82% d'entre eux ont adopte le teletravail au moins deux jours par semaine depuis 2020. Les trois outils les plus utilises sont la visioconference, les plateformes de gestion de cours et les espaces de stockage partage. 61% des repondants estiment que la flexibilite a ameliore leur productivite de recherche."
+    },
+    {
+      "id": "pub-8",
+      "titre": "La filiere hydrogene vert au Maroc : potentiel et defis",
+      "contenu": "Le Maroc vise une production de 10 TWh d'hydrogene vert par an destinee a l'exportation d'ici 2030. L'investissement total prevu pour la filiere est de 50 milliards de MAD. Un partenariat avec l'Union europeenne prevoit la construction de deux electrolyseurs de grande capacite dans les regions de Guelmim et de Dakhla."
+    },
+    {
+      "id": "pub-9",
+      "titre": "Evaluation automatique de publications academiques par regles et machine learning",
+      "contenu": "Le systeme d'evaluation combine un moteur de regles et un score de machine learning avec une ponderation de 40% pour les regles et 60% pour le ML. Trois metriques sont produites : la rigueur, la completude et l'originalite. Le score final est toujours compris entre 0 et 1, le seuil de qualite etant fixe a 0,5."
+    },
+    {
+      "id": "pub-10",
+      "titre": "Marche des prestations de services numeriques pour etudiants",
+      "contenu": "Le marche des prestations numeriques etudiantes au Maroc compte environ 2500 etudiants freelances actifs. Le tarif median d'une prestation de developpement web est de 350 MAD. Les prestations les plus demandees sont la creation de sites vitrines, le developpement de petites applications et le support de donnees."
+    },
+    {
+      "id": "pub-11",
+      "titre": "Securite des pipelines CI/CD et pratiques DevSecOps",
+      "contenu": "L'integration d'outils de scan SAST et DAST dans le pipeline CI/CD reduit le nombre de vulnerabilites critiques de 68% en moyenne. Les entreprises adoptees constatent aussi une reduction de 41% du temps de deploiement grace a l'automatisation des controles de securite. Les scans sont executes a chaque commit sur la branche principale."
+    },
+    {
+      "id": "pub-12",
+      "titre": "L'intelligence artificielle generative dans l'education superieure",
+      "contenu": "L'etude mesure l'adoption des assistants generatifs par les etudiants : 54% des etudiants interroges utilisent un outil d'IA generative au moins une fois par semaine. Trois usages dominants emergent : la generation d'idees, l'aide a la redaction et la preparation d'examens. Les auteurs recommandent d'encadrer ces usages par une charte ethique et une verification systematique des sources."
+    },
+    {
+      "id": "pub-13",
+      "titre": "Modele economique des missions courtes pour etudiants",
+      "contenu": "Les missions courtes confient aux etudiants des livrables reduits sur une periode de deux a quatre semaines. A la fin de chaque mission, le client evalue l'etudiant sur une echelle de 1 a 5. La remuneration moyenne constatee est de 800 MAD par mission. La validation des competences obtenue alimente le profil certifie de l'etudiant."
+    }
+  ]
+}

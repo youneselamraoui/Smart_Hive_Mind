@@ -1,3 +1,6 @@
+# Runtime du service (image Docker). Les dependances d'EVALUATION RAGAS
+# (cahier des charges 5.7) vivent dans requirements-eval.txt, installees
+# uniquement au moment de l'evaluation : scripts/eval_rag.py.
 fastapi>=0.115.0
 uvicorn[standard]>=0.34.0
 chromadb>=1.0.0

@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 function similarityGauge(pct: number): string {
   const r = 38, cx = 48, cy = 48;
@@ -23,7 +24,7 @@ function similarityGauge(pct: number): string {
 @Component({
   selector: 'app-analyze-text',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, SafeHtmlPipe],
   template: `
     <div class="page">
       <div class="page-head"><div><h1>Analyser un texte</h1><p>Détection de plagiat et analyse</p></div></div>
@@ -46,7 +47,7 @@ function similarityGauge(pct: number): string {
 
         @if (result(); as r) {
           <div class="result-section">
-            <div class="gauge-row" [innerHTML]="gaugeHtml(r.similarite)"></div>
+            <div class="gauge-row" [innerHTML]="gaugeHtml(r.similarite) | safeHtml"></div>
 
             @if (r.passagesSuspects?.length) {
               <div class="highlight-section">

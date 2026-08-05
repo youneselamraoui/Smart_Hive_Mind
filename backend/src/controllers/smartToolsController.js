@@ -4,20 +4,55 @@ const JeuDeDonnees = require("../models/JeuDeDonnees");
 const ModeleIA = require("../models/ModeleIA");
 const Atelier = require("../models/Atelier");
 
-const AI_AGENTIC_URL = process.env.AI_AGENTIC_URL || "http://ai-agentic:8000";
-const AI_CONVERSATIONAL_URL = process.env.IA_CONVERSATIONAL_URL || "http://ai-conversational:8000";
-const AI_DECISIONNEL_URL = process.env.IA_DECISIONNEL_URL || "http://ai-decisionnel:8000";
+const IA_AGENTIC_URL = process.env.IA_AGENTIC_URL || "http://ai-agentic:8000";
+const IA_CONVERSATIONAL_URL = process.env.IA_CONVERSATIONAL_URL || "http://ai-conversational:8000";
+const IA_DECISIONNEL_URL = process.env.IA_DECISIONNEL_URL || "http://ai-decisionnel:8000";
 const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL || "http://backend:3000";
 const ATELIER_TIMEOUT_MS = 30000;
 
 const ATELIER_DEFINITIONS = {
-    "ia-neuro-symbolique": {
+    "neuro_symbolique": {
         nom: "Atelier IA neuro-symbolique",
         etapesDefinition: [
-            { label: "Sélection des données", url: `${AI_CONVERSATIONAL_URL}/conversational/assist-writing`, method: "POST", payload: {} },
-            { label: "Génération synthétique", url: `${AI_CONVERSATIONAL_URL}/conversational/generate`, method: "POST", payload: {} },
-            { label: "Entraînement du modèle", url: `${AI_DECISIONNEL_URL}/decisionnel/score-publication`, method: "POST", payload: {} },
-            { label: "Publication du modèle", url: `${BACKEND_INTERNAL_URL}/api/smart-tools/models`, method: "POST", payload: {} },
+            {
+                label: "Sélection des données",
+                url: `${IA_CONVERSATIONAL_URL}/conversational/assist-writing`,
+                method: "POST",
+                payload: {
+                    brouillon: "Sélection des données pour un atelier neuro-symbolique dédié à l'évaluation de publications scientifiques.",
+                    type: "pfe",
+                },
+            },
+            {
+                label: "Génération synthétique",
+                url: `${IA_CONVERSATIONAL_URL}/conversational/generate`,
+                method: "POST",
+                payload: {
+                    prompt: "Génère un paragraphe synthétique présentant la méthodologie d'un atelier neuro-symbolique combinant règles symboliques et apprentissage statistique pour l'évaluation de publications.",
+                    type: "these",
+                    ton: "academique",
+                },
+            },
+            {
+                label: "Entraînement du modèle",
+                url: `${IA_DECISIONNEL_URL}/decisionnel/score-publication`,
+                method: "POST",
+                payload: {
+                    contenu: "L'atelier neuro-symbolique évalue les publications en combinant des règles d'évaluation explicites avec un score statistique d'originalité. La méthode hybride améliore la transparence des décisions.",
+                    titre: "Atelier neuro-symbolique - génération synthétique",
+                    type: "these",
+                },
+            },
+            {
+                label: "Publication du modèle",
+                url: `${BACKEND_INTERNAL_URL}/api/smart-tools/models/json`,
+                method: "POST",
+                payload: {
+                    nom: "modele-atelier-neuro-symbolique",
+                    tache: "atelier_neuro_symbolique",
+                    version: "1.0.0",
+                },
+            },
         ],
     },
 };
@@ -165,6 +200,41 @@ exports.publishModel = async (req, res) => {
     }
 };
 
+/**
+ * Publier un modele sans fichier (payload JSON).
+ * Utilise par l'etape "Publication du modele" de l'atelier generique
+ * (l'orchestrateur ne peut pas produire d'upload multipart).
+ */
+exports.publishModelJson = async (req, res) => {
+    try {
+        const { nom, tache, performance, version, explicabiliteUrl, jeuDeDonneesId } = req.body;
+
+        const modelEntry = await ModeleIA.create({
+            nom: nom || "modele-sans-fichier",
+            tache: tache || "",
+            performance: performance || {},
+            version: version || "1.0.0",
+            explicabiliteUrl: explicabiliteUrl || "",
+            auteurId: req.membre ? req.membre.id : undefined,
+            jeuDeDonneesId: jeuDeDonneesId || undefined,
+        });
+
+        res.status(201).json({
+            message: "Modele publie dans la Model Bank.",
+            model: {
+                id: modelEntry._id,
+                nom: modelEntry.nom,
+                version: modelEntry.version,
+            },
+        });
+    } catch (err) {
+        if (err.name === "ValidationError") {
+            return res.status(400).json({ error: err.message });
+        }
+        res.status(500).json({ error: "Erreur interne du serveur." });
+    }
+};
+
 exports.createAtelier = async (req, res) => {
     try {
         const { nom, type } = req.body;
@@ -187,7 +257,7 @@ exports.createAtelier = async (req, res) => {
         });
 
         // Fire-and-forget : ne pas bloquer la reponse
-        fetchWithTimeout(`${AI_AGENTIC_URL}/agentic/run-workshop`, {
+        fetchWithTimeout(`${IA_AGENTIC_URL}/agentic/run-workshop`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

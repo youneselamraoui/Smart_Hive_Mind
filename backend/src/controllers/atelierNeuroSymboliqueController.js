@@ -10,7 +10,7 @@ exports.createAtelierNeuroSymbolique = async (req, res) => {
         const atelier = await Atelier.create({
             nom: "Atelier neuro-symbolique",
             type: "neuro_symbolique",
-            createdBy: req.membre._id,
+            createdBy: req.membre.id,
             regles: REGLES_PAR_DEFAUT.map((r) => ({
                 nom: r.nom,
                 condition: r.condition,
@@ -41,7 +41,7 @@ exports.updateRegles = async (req, res) => {
             return res.status(404).json({ error: "Atelier introuvable." });
         }
 
-        if (atelier.createdBy.toString() !== req.membre._id.toString() && req.membre.role !== "admin") {
+        if (atelier.createdBy.toString() !== req.membre.id.toString() && req.membre.role !== "admin") {
             return res.status(403).json({ error: "Seul le proprietaire de l'atelier peut modifier ses regles." });
         }
 
@@ -65,7 +65,7 @@ exports.testerRegles = async (req, res) => {
             return res.status(404).json({ error: "Atelier introuvable." });
         }
 
-        if (atelier.createdBy.toString() !== req.membre._id.toString() && req.membre.role !== "admin") {
+        if (atelier.createdBy.toString() !== req.membre.id.toString() && req.membre.role !== "admin") {
             return res.status(403).json({ error: "Seul le proprietaire de l'atelier peut executer des tests." });
         }
 
@@ -115,7 +115,7 @@ exports.getStatus = async (req, res) => {
             return res.status(404).json({ error: "Atelier introuvable." });
         }
 
-        if (atelier.createdBy.toString() !== req.membre._id.toString() && req.membre.role !== "admin") {
+        if (atelier.createdBy.toString() !== req.membre.id.toString() && req.membre.role !== "admin") {
             return res.status(403).json({ error: "Seul le proprietaire de l'atelier peut consulter son statut." });
         }
 

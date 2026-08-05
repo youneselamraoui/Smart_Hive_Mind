@@ -29,6 +29,15 @@ router.get("/communaute/forums", async (req, res) => {
     }
 });
 
+router.get("/communaute/sondages", async (req, res) => {
+    try {
+        const items = await Sondage.find().populate("auteurId", "nom prenom email").sort({ createdAt: -1 });
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne." });
+    }
+});
+
 router.get("/communaute/sondages/:id", async (req, res) => {
     try {
         const item = await Sondage.findById(req.params.id).populate("auteurId", "nom prenom email");

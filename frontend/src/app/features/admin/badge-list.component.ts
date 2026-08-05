@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 const BADGE_ICONS: Record<string, string> = {
   innovateur: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.58-.68.91-1.55.91-2.5a4 4 0 0 0-8 0c0 .95.33 1.82.91 2.5"/><path d="M12 2v1"/><path d="M4.93 4.93l.71.71"/><path d="M2 12h1"/></svg>`,
@@ -23,7 +24,7 @@ const BADGE_COLORS: Record<string, { bg: string; fg: string }> = {
 @Component({
   selector: 'app-badge-list',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, SafeHtmlPipe],
   template: `
     <div class="page">
       <div class="page-head"><div><h1>Badges attribués</h1></div></div>
@@ -36,7 +37,7 @@ const BADGE_COLORS: Record<string, { bg: string; fg: string }> = {
         <div class="grid">
           @for (b of badges(); track b._id) {
             <div class="card">
-              <div class="card-icon" [style.background]="color(b.type).bg" [style.color]="color(b.type).fg" [innerHTML]="icon(b.type)"></div>
+              <div class="card-icon" [style.background]="color(b.type).bg" [style.color]="color(b.type).fg" [innerHTML]="icon(b.type) | safeHtml"></div>
               <div class="card-info">
                 <h3>{{ badgeLabel(b.type) }}</h3>
                 @if (b.justification) { <p>{{ b.justification }}</p> }

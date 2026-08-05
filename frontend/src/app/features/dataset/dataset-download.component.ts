@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of, finalize } from 'rxjs';
+import { RouterLink } from '@angular/router';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ContentCardComponent } from '../../core/content-card.component';
 import { EmptyStateComponent } from '../../core/empty-state.component';
@@ -30,12 +31,13 @@ const FALLBACK_DATASETS: Dataset[] = [
 @Component({
   selector: 'app-dataset-download',
   standalone: true,
-  imports: [CommonModule, ContentCardComponent, EmptyStateComponent, SkeletonModule],
+  imports: [CommonModule, ContentCardComponent, EmptyStateComponent, SkeletonModule, RouterLink],
   template: `
     <div class="page">
       <div class="page-header">
-        <h2>Datasets disponibles</h2>
-        <p class="subtitle">Téléchargez des jeux de données pour vos analyses</p>
+        <div><h2>Datasets disponibles</h2>
+        <p class="subtitle">Téléchargez des jeux de données pour vos analyses</p></div>
+        <a class="upload-btn" routerLink="/app/smart-tools/datasets/upload">Uploader un dataset</a>
       </div>
 
       @if (loading()) {
@@ -85,9 +87,11 @@ const FALLBACK_DATASETS: Dataset[] = [
   `,
   styles: [`
     .page { max-width: 900px; margin: 0 auto; padding: 24px 0; }
-    .page-header { margin-bottom: 24px; }
+    .page-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .page-header h2 { font-size: 1.25rem; margin: 0 0 4px; }
     .subtitle { margin: 0; font-size: 0.85rem; color: var(--ink-700); }
+    .upload-btn { padding: 8px 16px; border-radius: var(--radius-sm); background: var(--honey-500); color: var(--ink-900); font-size: var(--text-sm); font-weight: 600; text-decoration: none; white-space: nowrap; transition: filter var(--transition); }
+    .upload-btn:hover { filter: brightness(1.08); }
     .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
     .skeleton-card { background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); padding: 0; overflow: hidden; }
     .skeleton-card > div { padding: 16px 18px; }

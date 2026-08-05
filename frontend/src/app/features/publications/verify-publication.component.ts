@@ -149,8 +149,23 @@ export class VerifyPublicationComponent {
     this.loading.set(true);
     this.error.set(null);
     this.result.set(null);
-    this.http.get<any>('/api/publications/verify/' + encodeURIComponent(hash)).subscribe({
-      next: r => { this.result.set(r); this.loading.set(false); },
+    this.http.get<any>('/api/preuves/verify/' + encodeURIComponent(hash)).subscribe({
+      next: (r) => {
+        if (!r.exists) {
+          this.error.set('Aucune entité ancrée trouvée pour ce hash.');
+          this.loading.set(false);
+          return;
+        }
+        if (r.type !== 'publication') {
+          this.error.set('Cette preuve concerne une ' + r.type + ', pas une publication.');
+          this.loading.set(false);
+          return;
+        }
+        this.http.get<any>('/api/publications/' + r.entiteId).subscribe({
+          next: (pub) => { this.result.set({ ...r, ...pub }); this.loading.set(false); },
+          error: (e) => { this.error.set(e.error?.error || 'Publication introuvable.'); this.loading.set(false); },
+        });
+      },
       error: e => { this.error.set(e.error?.error || 'Aucune publication trouvée pour ce hash.'); this.loading.set(false); },
     });
   }

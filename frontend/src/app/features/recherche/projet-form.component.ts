@@ -1,9 +1,9 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
-import { ProjetRechercheFinanceService, ProjetRechercheFinance } from './projet-recherche-finance.service';
+import { ProjetRechercheFinanceService, Livrable } from './projet-recherche-finance.service';
 
 @Component({
   selector: 'app-projet-form',
@@ -29,8 +29,18 @@ import { ProjetRechercheFinanceService, ProjetRechercheFinance } from './projet-
           </div>
 
           <div class="field">
-            <label for="livrables">Livrables (un par ligne)</label>
-            <textarea id="livrables" formControlName="livrables" rows="4" placeholder="Ex: Prototype fonctionnel&#10;Rapport de recherche"></textarea>
+            <label>Livrables</label>
+            <div formArrayName="livrables">
+              @for (livrable of livrables.controls; track livrable; let i = $index) {
+                <div class="livrable-row" [formGroupName]="i">
+                  <input type="text" formControlName="description" placeholder="Description du livrable" />
+                  <input type="date" formControlName="dateEcheance" title="Date d'échéance (optionnelle)" />
+                  <input type="text" formControlName="statut" placeholder="Statut (optionnel)" />
+                  <button type="button" class="livrable-remove" (click)="removeLivrable(i)" title="Supprimer">&times;</button>
+                </div>
+              }
+            </div>
+            <button type="button" class="livrable-add" (click)="addLivrable()">+ Ajouter un livrable</button>
           </div>
 
           <div class="field">
@@ -64,6 +74,13 @@ import { ProjetRechercheFinanceService, ProjetRechercheFinance } from './projet-
     .field input, .field textarea, .field select { padding: 10px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.88rem; font-family: var(--font-sans); outline: none; background: var(--color-surface); color: var(--ink-900); }
     .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--color-primary-blue); box-shadow: 0 0 0 3px rgba(217,160,43,0.15); }
     .form-note { font-size: 0.8rem; color: var(--ink-700); margin: 0 0 20px; }
+    .livrable-row { display: grid; grid-template-columns: 1fr auto auto 36px; gap: 8px; margin-bottom: 8px; }
+    .livrable-row input { padding: 10px 14px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.88rem; font-family: var(--font-sans); outline: none; background: var(--color-surface); color: var(--ink-900); box-sizing: border-box; }
+    .livrable-row input:focus { border-color: var(--color-primary-blue); box-shadow: 0 0 0 3px rgba(217,160,43,0.15); }
+    .livrable-remove { width: 36px; height: 38px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); background: none; font-size: 1.2rem; cursor: pointer; color: var(--ink-700); display: flex; align-items: center; justify-content: center; }
+    .livrable-remove:hover { border-color: var(--alert-500); color: var(--alert-500); }
+    .livrable-add { background: none; border: 1.5px dashed var(--color-border); border-radius: var(--radius-sm); padding: 10px; font-size: 0.88rem; color: var(--color-primary-blue); cursor: pointer; width: 100%; }
+    .livrable-add:hover { border-color: var(--color-primary-blue); }
     .form-actions { display: flex; gap: 12px; margin-top: 24px; }
     .btn-primary { flex: 1; padding: 12px; background: var(--color-primary-blue); color: var(--ink-900); border: none; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
     .btn-primary:hover:not(:disabled) { background: var(--honey-600); }
@@ -87,9 +104,22 @@ export class ProjetFormComponent implements OnInit, OnDestroy {
   form = this.fb.nonNullable.group({
     theme: ['', Validators.required],
     budget: [<number | null>null],
-    livrables: [''],
+    livrables: this.fb.array([]),
     statut: ['candidature'],
   });
+
+  get livrables() { return this.form.get('livrables') as FormArray; }
+
+  private livrableGroup(l?: Livrable) {
+    return this.fb.nonNullable.group({
+      description: [l?.description ?? ''],
+      dateEcheance: [l?.dateEcheance ? l.dateEcheance.slice(0, 10) : ''],
+      statut: [l?.statut ?? ''],
+    });
+  }
+
+  addLivrable() { this.livrables.push(this.livrableGroup()); }
+  removeLivrable(i: number) { this.livrables.removeAt(i); }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -100,9 +130,10 @@ export class ProjetFormComponent implements OnInit, OnDestroy {
           this.form.patchValue({
             theme: p.theme,
             budget: p.budget ?? null,
-            livrables: (p.livrables || []).map(l => l.description).filter(Boolean).join('\n'),
             statut: p.statut,
           });
+          this.livrables.clear();
+          (p.livrables || []).forEach(l => this.livrables.push(this.livrableGroup(l)));
         },
         error: () => this.toast.error('Impossible de charger le projet.'),
       });
@@ -120,11 +151,16 @@ export class ProjetFormComponent implements OnInit, OnDestroy {
     const data = {
       theme: raw.theme ?? '',
       ...(raw.budget != null ? { budget: raw.budget } : {}),
-      livrables: (raw.livrables || '')
-        .split('\n')
-        .map((s: string) => s.trim())
-        .filter(Boolean)
-        .map((description: string) => ({ description })),
+      livrables: (this.livrables.controls as FormGroup[])
+        .map(g => {
+          const v = g.value;
+          const l: { description?: string; dateEcheance?: string; statut?: string } = {};
+          if (v.description?.trim()) l.description = v.description.trim();
+          if (v.dateEcheance) l.dateEcheance = v.dateEcheance;
+          if (v.statut?.trim()) l.statut = v.statut.trim();
+          return l;
+        })
+        .filter(l => l.description || l.dateEcheance || l.statut),
       statut: (raw.statut ?? 'candidature') as 'candidature' | 'en_cours' | 'termine',
     };
 

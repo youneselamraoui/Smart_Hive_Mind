@@ -123,7 +123,7 @@ exports.soumettreAuJournal = async (req, res) => {
         }
 
         const auteurId = publication.auteur?.toString?.() || publication.auteur;
-        if (auteurId !== req.membre._id.toString() && req.membre.role !== "admin") {
+        if (auteurId !== req.membre.id.toString() && req.membre.role !== "admin") {
             return res
                 .status(403)
                 .json({ error: "Seul l'auteur de la publication peut la soumettre à un journal." });
@@ -132,11 +132,10 @@ exports.soumettreAuJournal = async (req, res) => {
         publication.journalId = journalId;
         await publication.save();
 
-        const peuple = await publication
-            .populate("auteur", "nom prenom email")
-            .populate("journalId", "nom");
+        await publication.populate("auteur", "nom prenom email");
+        await publication.populate("journalId", "nom");
 
-        res.json(peuple);
+        res.json(publication);
     } catch (err) {
         if (err.name === "ValidationError") {
             return res.status(400).json({ error: err.message });

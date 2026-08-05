@@ -36,7 +36,9 @@ router.get("/entrepreneuriat/campagnes", async (req, res) => {
 
 router.get("/entrepreneuriat/projets/:id", async (req, res) => {
     try {
-        const item = await Projet.findById(req.params.id).populate("equipe", "nom prenom email");
+        const item = await Projet.findById(req.params.id)
+            .populate("equipe", "nom prenom email")
+            .populate("porteurId", "nom prenom email");
         if (!item) return res.status(404).json({ error: "Projet introuvable." });
         res.json(item);
     } catch (err) {
@@ -52,6 +54,7 @@ router.put("/entrepreneuriat/business-plans/:id", auth, ctrl.updateBusinessPlan)
 router.post("/entrepreneuriat/idees", auth, validate(createIdeeSchema), ctrl.createIdee);
 router.post("/entrepreneuriat/idees/vote", auth, validate(voteIdeeSchema), ctrl.voteIdee);
 router.post("/entrepreneuriat/idees/promote", auth, validate(promoteToProjetSchema), ctrl.promoteToProjet);
+router.post("/entrepreneuriat/idees/:id/ancrer", auth, ctrl.ancrerIdee);
 router.post("/entrepreneuriat/business-plan/generate", auth, validate(generateBusinessPlanSchema), ctrl.generateBusinessPlan);
 router.post("/entrepreneuriat/campagnes", auth, validate(createCampagneSchema), ctrl.createCampagne);
 router.post("/entrepreneuriat/campagnes/contribute", auth, validate(contributeSchema), ctrl.contributeToCampaign);

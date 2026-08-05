@@ -1,6 +1,6 @@
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from src.gemini_client import get_embeddings_batch
+from src_decisionnel.gemini_client import get_embeddings_batch
 
 
 def score_originalite(titre: str, contenu: str) -> float:

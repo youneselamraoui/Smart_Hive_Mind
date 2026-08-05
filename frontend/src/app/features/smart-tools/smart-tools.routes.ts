@@ -27,9 +27,27 @@ export const smartToolsRoutes: Routes = [
     title: 'Publier un modèle',
   },
   {
+    path: 'outils',
+    loadComponent: () =>
+      import('./outil-list/outil-list').then(m => m.OutilListComponent),
+    title: 'Outils',
+  },
+  {
     path: 'ateliers/:id',
     loadComponent: () =>
       import('./atelier-runner/atelier-runner').then(m => m.AtelierRunnerComponent),
     title: 'Atelier en cours',
+  },
+  {
+    path: 'atelier-neuro-symbolique',
+    loadComponent: () =>
+      import('./atelier-neuro-symbolique.component').then(m => m.AtelierNeuroSymboliqueComponent),
+    title: 'Atelier neuro-symbolique',
+  },
+  {
+    path: 'atelier-neuro-symbolique/:id',
+    loadComponent: () =>
+      import('./atelier-neuro-symbolique.component').then(m => m.AtelierNeuroSymboliqueComponent),
+    title: 'Atelier neuro-symbolique',
   },
 ];

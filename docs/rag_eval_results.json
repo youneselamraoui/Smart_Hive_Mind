@@ -1,0 +1,132 @@
+{
+  "metodologie": "RAGAS (faithfulness, answer_relevancy) - juge unique",
+  "cahier_des_charges": "partie 5.7",
+  "date": "2026-08-02T02:46:09+0100",
+  "service_url": "http://127.0.0.1:8004",
+  "modele_juge": "gemini-flash-lite-latest",
+  "modele_generation_canonique": "gemini-2.5-flash",
+  "modele_embedding": "gemini-embedding-001",
+  "corpus": {
+    "fichier": "C:\\Users\\youne\\OneDrive\\Desktop\\Smart_Hive_mind\\scripts\\seed_publications_eval.json",
+    "nb_publications": 13
+  },
+  "jeu_de_test": {
+    "fichier": "C:\\Users\\youne\\OneDrive\\Desktop\\Smart_Hive_mind\\scripts\\rag_eval_questions.json",
+    "nb_questions": 6
+  },
+  "note_execution": "Run AVEC chunking (decoupage paragraphes / fenetre glissante 500 mots, chevauchement 50) dans ai-services/conversational/src/vectorstore.py : chaque chunk porte les metadonnees doc_id/chunk_index et les sources de /ask sont dedupliquees par doc_id. Contrainte identique au run de reference : le modele canonique de generation gemini-2.5-flash renvoie 404 (model plus disponible pour cette cle) ; le service a tourne pour CE run avec GEMINI_LLM_MODEL=gemini-3.5-flash-lite (contournement transitoire documente, config par defaut non modifiee). Juge RAGAS unique et coherent : gemini-flash-lite-latest. Diagnostic clos le 02/08/2026 (ADR-004 Annexe A) : le 404 est une restriction specifique a la cle ("new user"), pas une depreciation du modele.",
+  "scores_moyens": {
+    "faithfulness_moyenne": 1.0,
+    "answer_relevancy_moyenne": 0.8289
+  },
+  "par_question": [
+    {
+      "numero": 1,
+      "question": "Quel est le taux de survie des startups hebergees par l'incubateur de Casablanca et quel est son cout d'investissement initial ?",
+      "ground_truth": "Le taux de survie attendu apres deux ans est de 78% et l'investissement initial est de 2,4 millions de MAD.",
+      "docs_attendus": [
+        "pub-1"
+      ],
+      "sources_retrouvees": [
+        "pub-1",
+        "pub-5",
+        "pub-10",
+        "pub-13",
+        "pub-3"
+      ],
+      "reponse": "D'après le contexte fourni :\n\n* Le taux de survie attendu des startups incubées (par l'incubateur de Casablanca) après deux ans est de **78%**.\n* Le coût de l'investissement initial prévu pour cet incubateur est de **2,4 millions de MAD**.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8768
+    },
+    {
+      "numero": 2,
+      "question": "Quelle precision atteint le modele CNN de classification d'images medicales et sur quel reseau est-il base ?",
+      "ground_truth": "Le modele atteint une precision de 94,5% sur l'ensemble de test et est base sur ResNet50 avec transfer learning.",
+      "docs_attendus": [
+        "pub-2"
+      ],
+      "sources_retrouvees": [
+        "pub-2",
+        "pub-6",
+        "pub-9",
+        "pub-12",
+        "pub-11"
+      ],
+      "reponse": "D'après le contexte fourni, le modèle CNN atteint une précision de 94,5% sur l'ensemble de test, et il est basé sur ResNet50.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8106
+    },
+    {
+      "numero": 3,
+      "question": "Quelle proportion d'entreprises marocaines a adopte la blockchain dans sa chaine logistique et quelle reduction de couts observe-t-on ?",
+      "ground_truth": "41% des entreprises ont adopte la blockchain et la reduction moyenne des couts logistiques est de 23%.",
+      "docs_attendus": [
+        "pub-3"
+      ],
+      "sources_retrouvees": [
+        "pub-3",
+        "pub-5",
+        "pub-10",
+        "pub-8",
+        "pub-1"
+      ],
+      "reponse": "D'après le contexte fourni :\n\n* **41%** des entreprises (parmi les 120 entreprises interrogées lors de l'enquête menée en 2024) ont adopté la blockchain dans leur chaîne logistique.\n* On observe une réduction moyenne de **23%** des coûts logistiques chez ces entreprises adoptantes.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8266
+    },
+    {
+      "numero": 4,
+      "question": "Quelle part de la motivation des contributeurs de crowdsourcing est intrinseque ?",
+      "ground_truth": "La motivation intrinseque represente 67% des motivations des contributeurs.",
+      "docs_attendus": [
+        "pub-4"
+      ],
+      "sources_retrouvees": [
+        "pub-4",
+        "pub-5",
+        "pub-13",
+        "pub-9",
+        "pub-10"
+      ],
+      "reponse": "D'après le contexte fourni, la motivation intrinsèque représente 67 % des motivations des contributeurs.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8207
+    },
+    {
+      "numero": 5,
+      "question": "Quel gain de precision l'IA neuro-symbolique apporte-t-elle en diagnostic assiste par rapport a un reseau seul ?",
+      "ground_truth": "Elle ameliore la precision de 12% par rapport a un reseau de neurones seul.",
+      "docs_attendus": [
+        "pub-6"
+      ],
+      "sources_retrouvees": [
+        "pub-6",
+        "pub-9",
+        "pub-2",
+        "pub-12",
+        "pub-1"
+      ],
+      "reponse": "L'IA neuro-symbolique apporte un gain de précision de 12% par rapport à un réseau de neurones seul.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8254
+    },
+    {
+      "numero": 6,
+      "question": "De combien l'integration de scans SAST et DAST reduit-elle les vulnerabilites critiques dans un pipeline CI/CD ?",
+      "ground_truth": "Elle reduit le nombre de vulnerabilites critiques de 68% en moyenne.",
+      "docs_attendus": [
+        "pub-11"
+      ],
+      "sources_retrouvees": [
+        "pub-11",
+        "pub-9",
+        "pub-1",
+        "pub-7",
+        "pub-3"
+      ],
+      "reponse": "D'après le contexte, l'intégration d'outils de scan SAST et DAST dans le pipeline CI/CD réduit le nombre de vulnérabilités critiques de 68% en moyenne.",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8131
+    }
+  ]
+}

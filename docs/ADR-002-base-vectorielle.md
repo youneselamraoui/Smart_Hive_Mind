@@ -21,7 +21,7 @@ service `ai-conversational`. Les candidats documentés sont :
 | **ChromaDB** | Aucun document de cadrage | **Non mentionné** mais déjà implémenté dans le code |
 
 Au moment de la rédaction du présent ADR, ChromaDB est déjà opérationnel dans le service
-`ai-services/conversational/src/vectorstore.py` et utilisé par les endpoints `/ask`,
+`ai-services/conversational/src_conversational/vectorstore.py` et utilisé par les endpoints `/ask`,
 `/assist-writing`, et `/index-publications` du pipeline RAG.
 
 ---
@@ -156,7 +156,7 @@ de données justifie une infrastructure dédiée.
 
 ## Références
 
-- [vectorstore.py](../ai-services/conversational/src/vectorstore.py) — implémentation ChromaDB
+- [vectorstore.py](../ai-services/conversational/src_conversational/vectorstore.py) — implémentation ChromaDB
 - [.env.example — conversationnel](../ai-services/conversational/.env.example) — variable `CHROMA_PERSIST_DIR`
 - [docker-compose.yml](../docker-compose.yml) — volume `chroma-data` (dev)
 - [docker-compose.prod.yml](../docker-compose.prod.yml) — volume `chroma-data` (production, ajouté par ADR-002)

@@ -72,11 +72,11 @@ interface ProgrammeItem {
                   <div class="oeuvre-card">
                     <div class="oeuvre-head">
                       <h3>{{ o.titre }}</h3>
-                      @if (o.protegee) {
+                      @if (o.preuve?.statut === 'ancre') {
                         <app-hex-seal status="valide" [size]="28"></app-hex-seal>
                       }
                     </div>
-                    <p class="oeuvre-desc">{{ o.description }}</p>
+                    <p class="oeuvre-desc">{{ o.contenu }}</p>
                     <span class="oeuvre-author">par {{ o.auteur?.prenom }} {{ o.auteur?.nom }}</span>
                   </div>
                 }
@@ -238,11 +238,7 @@ export class EvenementDetailComponent implements OnInit {
       next: ev => {
         this.e.set(ev);
         this.inscrit.set(ev.inscrits?.some((m: any) => (m._id || m) === this.membreId) || false);
-        if (ev.type === 'hackathon') {
-          this.http.get<any[]>('/api/evenements/' + id + '/oeuvres').subscribe({
-            next: list => this.oeuvres.set(list),
-          });
-        }
+        this.oeuvres.set(ev.oeuvresSoumises || []);
       },
       error: () => this.loading.set(false),
       complete: () => this.loading.set(false),
@@ -299,7 +295,7 @@ export class EvenementDetailComponent implements OnInit {
     this.http.post<any>('/api/evenements/soumettre', {
       evenementId: this.e()._id,
       titre: this.souTitre,
-      description: this.souDesc,
+      contenu: this.souDesc,
     }).subscribe({
       next: (o) => {
         this.oeuvres.update(list => [...list, o]);

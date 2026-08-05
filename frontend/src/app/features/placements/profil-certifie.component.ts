@@ -3,27 +3,12 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { HexSealComponent } from '../../core/hex-seal.component';
-
-function identiconSvg(id: string, name: string): string {
-  let hash = 0;
-  const str = id || name;
-  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-  const hue = Math.abs(hash % 360);
-  const cells: string[] = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const ci = r * 4 + (c < 2 ? c : 3 - c);
-      const on = ((hash >> (ci % 16)) & 1) === 1;
-      if (on) cells.push(`<rect x="${c * 5 + 2}" y="${r * 5 + 2}" width="5" height="5" rx="1" fill="hsl(${hue},40%,${50 + (ci % 3) * 12}%)" opacity="0.8"/>`);
-    }
-  }
-  return `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">${cells.join('')}</svg>`;
-}
+import { IdenticonComponent } from '../../core/identicon.component';
 
 @Component({
   selector: 'app-profil-certifie',
   standalone: true,
-  imports: [DatePipe, HexSealComponent],
+  imports: [DatePipe, HexSealComponent, IdenticonComponent],
   template: `
     <div class="page">
       @if (loading()) {
@@ -33,7 +18,7 @@ function identiconSvg(id: string, name: string): string {
         </div>
       } @else { @if (membre(); as m) {
         <div class="profile-hero">
-          <div class="hero-identicon" [innerHTML]="identiconSvg(m._id, m.prenom + ' ' + m.nom)"></div>
+          <div class="hero-identicon"><app-identicon [id]="m._id" [name]="m.prenom + ' ' + m.nom"></app-identicon></div>
           <div class="hero-info">
             <h1 class="hero-name">{{ m.prenom }} {{ m.nom }}</h1>
             <p class="hero-title">Profil certifié</p>
@@ -186,8 +171,6 @@ export class ProfilCertifieComponent implements OnInit {
   get competenceDeclaratives() {
     return (this.validations() || []).filter((v: any) => !v.valideeParMission);
   }
-
-  identiconSvg = identiconSvg;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');

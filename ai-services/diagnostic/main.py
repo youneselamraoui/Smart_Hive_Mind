@@ -3,8 +3,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from src.gemini_client import get_embedding
-from src.corpus import get_corpus_embeddings
+from src_diagnostic.gemini_client import get_embedding
+from src_diagnostic.corpus import get_corpus_embeddings
 
 if not os.environ.get("GEMINI_API_KEY"):
     raise RuntimeError("GEMINI_API_KEY manquante")

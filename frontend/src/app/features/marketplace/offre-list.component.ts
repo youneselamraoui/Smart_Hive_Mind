@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 function arcGauge(pct: number): string {
   const r = 38, cx = 48, cy = 48;
@@ -19,7 +20,7 @@ function arcGauge(pct: number): string {
 @Component({
   selector: 'app-offre-list',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, SafeHtmlPipe],
   template: `
     <div class="section">
       <div class="section-head">
@@ -61,7 +62,7 @@ function arcGauge(pct: number): string {
               <div class="card-footer">
                 <span class="org">Par {{ o.organisationId?.prenom }} {{ o.organisationId?.nom }}</span>
                 @if (o.matchingScore !== undefined) {
-                  <div class="match-gauge" [innerHTML]="arcGauge(o.matchingScore * 100)"></div>
+                  <div class="match-gauge" [innerHTML]="arcGauge(o.matchingScore * 100) | safeHtml"></div>
                 }
               </div>
             </div>

@@ -2,6 +2,7 @@ import { Component, inject, signal, HostListener } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { NotificationService } from '../../core/notification.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 const NOTIF_ICONS: Record<string, string> = {
   evenement: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
@@ -19,7 +20,7 @@ const NOTIF_ICONS: Record<string, string> = {
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, SafeHtmlPipe],
   template: `
     <div class="wrapper" (click)="toggle()">
       <button class="bell" aria-label="Notifications">
@@ -37,7 +38,7 @@ const NOTIF_ICONS: Record<string, string> = {
             @for (n of service.items().slice(0, 5); track n._id) {
               <div class="notif" [class.unread]="!n.lu">
                 @if (!n.lu) { <span class="unread-dot"></span> }
-                <div class="notif-icon" [innerHTML]="icon(n.type)"></div>
+                <div class="notif-icon" [innerHTML]="icon(n.type) | safeHtml"></div>
                 <div class="notif-c">
                   <p>{{ n.message }}</p>
                   <span class="notif-time">{{ n.createdAt | date:'short' }}</span>

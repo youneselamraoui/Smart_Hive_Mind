@@ -34,20 +34,8 @@ export const entrepreneuriatRoutes: Routes = [
     title: 'Projet',
   },
   {
-    path: 'campagnes',
-    loadComponent: () =>
-      import('./campagne-crowdfunding.component').then(m => m.CampagneCrowdfundingComponent),
-    title: 'Campagnes de crowdfunding',
-  },
-  {
     path: ':id',
     redirectTo: 'business-plans/:id',
     pathMatch: 'full',
-  },
-  {
-    path: 'mentorats/demander',
-    loadComponent: () =>
-      import('./mentorat-demander.component').then(m => m.MentoratDemanderComponent),
-    title: 'Demander un mentor',
   },
 ];

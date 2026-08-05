@@ -1,0 +1,35 @@
+{
+  "_commentaire": "Jeu de test RAGAS reduit a 6 questions representatives, une par grand domaine thematique du corpus seed (seed_publications_eval.json). Taille maitrisee pour rester sous le quota gratuit journalier d'un juge unique sur un run complet (indexation + questions + jugement).",
+  "questions": [
+    {
+      "question": "Quel est le taux de survie des startups hebergees par l'incubateur de Casablanca et quel est son cout d'investissement initial ?",
+      "ground_truth": "Le taux de survie attendu apres deux ans est de 78% et l'investissement initial est de 2,4 millions de MAD.",
+      "docs_attendus": ["pub-1"]
+    },
+    {
+      "question": "Quelle precision atteint le modele CNN de classification d'images medicales et sur quel reseau est-il base ?",
+      "ground_truth": "Le modele atteint une precision de 94,5% sur l'ensemble de test et est base sur ResNet50 avec transfer learning.",
+      "docs_attendus": ["pub-2"]
+    },
+    {
+      "question": "Quelle proportion d'entreprises marocaines a adopte la blockchain dans sa chaine logistique et quelle reduction de couts observe-t-on ?",
+      "ground_truth": "41% des entreprises ont adopte la blockchain et la reduction moyenne des couts logistiques est de 23%.",
+      "docs_attendus": ["pub-3"]
+    },
+    {
+      "question": "Quelle part de la motivation des contributeurs de crowdsourcing est intrinseque ?",
+      "ground_truth": "La motivation intrinseque represente 67% des motivations des contributeurs.",
+      "docs_attendus": ["pub-4"]
+    },
+    {
+      "question": "Quel gain de precision l'IA neuro-symbolique apporte-t-elle en diagnostic assiste par rapport a un reseau seul ?",
+      "ground_truth": "Elle ameliore la precision de 12% par rapport a un reseau de neurones seul.",
+      "docs_attendus": ["pub-6"]
+    },
+    {
+      "question": "De combien l'integration de scans SAST et DAST reduit-elle les vulnerabilites critiques dans un pipeline CI/CD ?",
+      "ground_truth": "Elle reduit le nombre de vulnerabilites critiques de 68% en moyenne.",
+      "docs_attendus": ["pub-11"]
+    }
+  ]
+}

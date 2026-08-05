@@ -63,5 +63,5 @@ print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred, target_names=["echec", "reussite"]))
 
-joblib.dump(model, "src/model.joblib")
-print("\nModel saved to src/model.joblib")
+joblib.dump(model, "src_predictive/model.joblib")
+print("\nModel saved to src_predictive/model.joblib")

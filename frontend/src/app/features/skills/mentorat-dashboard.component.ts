@@ -2,30 +2,21 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-function identiconSvg(id: string, name: string, size: number = 36): string {
-  let hash = 0;
-  const str = id || name;
-  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-  const hue = Math.abs(hash % 360);
-  const cells: string[] = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const ci = r * 4 + (c < 2 ? c : 3 - c);
-      const on = ((hash >> (ci % 16)) & 1) === 1;
-      if (on) cells.push(`<rect x="${c * 5 + 2}" y="${r * 5 + 2}" width="5" height="5" rx="1" fill="hsl(${hue},40%,${50 + (ci % 3) * 12}%)" opacity="0.8"/>`);
-    }
-  }
-  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" xmlns="http://www.w3.org/2000/svg">${cells.join('')}</svg>`;
-}
+import { RouterLink } from '@angular/router';
+import { IdenticonComponent } from '../../core/identicon.component';
 
 @Component({
   selector: 'app-mentorat-dashboard',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, RouterLink, IdenticonComponent],
   template: `
     <div class="page">
-      <div class="page-head"><div><h1>Mentorats</h1><p>Transmission et accompagnement</p></div></div>
+      <div class="page-head"><div><h1>Mentorats</h1><p>Transmission et accompagnement</p></div>
+        <div class="page-actions">
+          <a class="btn btn-outline btn-sm" routerLink="/app/skills/mentorats/demander">Demander un mentor</a>
+          <a class="btn btn-primary btn-sm" routerLink="/app/skills/mentorats/accepter">Demandes à accepter</a>
+        </div>
+      </div>
 
       @if (loading()) {
         <div class="skel-grid">@for (i of [1,2]; track i) { <div class="skel-card"><div class="skel-line w-70"></div><div class="skel-line w-40"></div></div> }</div>
@@ -38,7 +29,7 @@ function identiconSvg(id: string, name: string, size: number = 36): string {
             <div class="relation-card">
               <div class="relation-connect">
                 <div class="conn-side">
-                  <div class="identicon" [innerHTML]="identiconSvg(membreId, 'Moi')"></div>
+                  <div class="identicon"><app-identicon [id]="membreId" name="Moi" [size]="36"></app-identicon></div>
                   <span class="conn-label">Moi</span>
                 </div>
                 <div class="conn-line">
@@ -46,8 +37,8 @@ function identiconSvg(id: string, name: string, size: number = 36): string {
                   <div class="conn-arrow"></div>
                 </div>
                 <div class="conn-side">
-                  <div class="identicon" [innerHTML]="identiconSvg(m.apprenantId._id, m.apprenantId.prenom + ' ' + m.apprenantId.nom)"></div>
-                  <span class="conn-label">{{ m.apprenantId.prenom }}</span>
+                  <div class="identicon"><app-identicon [id]="m.apprenantId._id" [name]="m.apprenantId.prenom + ' ' + m.apprenantId.nom" [size]="36"></app-identicon></div>
+                  <a class="conn-label" [routerLink]="['/app', 'membre', m.apprenantId._id]">{{ m.apprenantId.prenom }}</a>
                 </div>
                 <span class="conn-status" [class.active]="m.statut === 'actif'">{{ m.statut }}</span>
               </div>
@@ -77,15 +68,15 @@ function identiconSvg(id: string, name: string, size: number = 36): string {
             <div class="relation-card">
               <div class="relation-connect">
                 <div class="conn-side">
-                  <div class="identicon" [innerHTML]="identiconSvg(m.mentorId._id, m.mentorId.prenom + ' ' + m.mentorId.nom)"></div>
-                  <span class="conn-label">{{ m.mentorId.prenom }}</span>
+                  <div class="identicon"><app-identicon [id]="m.mentorId._id" [name]="m.mentorId.prenom + ' ' + m.mentorId.nom" [size]="36"></app-identicon></div>
+                  <a class="conn-label" [routerLink]="['/app', 'membre', m.mentorId._id]">{{ m.mentorId.prenom }}</a>
                 </div>
                 <div class="conn-line">
                   <div class="conn-dash"></div>
                   <div class="conn-arrow conn-arrow--rev"></div>
                 </div>
                 <div class="conn-side">
-                  <div class="identicon" [innerHTML]="identiconSvg(membreId, 'Moi')"></div>
+                  <div class="identicon"><app-identicon [id]="membreId" name="Moi" [size]="36"></app-identicon></div>
                   <span class="conn-label">Moi</span>
                 </div>
                 <span class="conn-status" [class.active]="m.statut === 'actif'">{{ m.statut }}</span>
@@ -108,9 +99,10 @@ function identiconSvg(id: string, name: string, size: number = 36): string {
   `,
   styles: [`
     :host { display: block; }
-    .page-head { margin-bottom: 24px; }
+    .page-head { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .page-head h1 { font-size: var(--text-2xl); margin: 0 0 2px; }
     .page-head p { margin: 0; font-size: var(--text-sm); color: var(--ink-700); }
+    .page-actions { display: flex; gap: 8px; }
 
     .empty { display: flex; flex-direction: column; align-items: center; padding: 60px 24px; }
     .empty h3 { font-size: var(--text-lg); margin: 0 0 4px; }
@@ -131,7 +123,8 @@ function identiconSvg(id: string, name: string, size: number = 36): string {
     .conn-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 50px; }
     .identicon { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: var(--paper-50); flex-shrink: 0; }
     .identicon :deep(svg) { width: 100%; height: 100%; display: block; }
-    .conn-label { font-size: var(--text-xs); font-weight: 600; color: var(--ink-700); text-align: center; }
+    .conn-label { font-size: var(--text-xs); font-weight: 600; color: var(--ink-700); text-align: center; text-decoration: none; transition: color var(--transition); }
+    .conn-label:hover { color: var(--honey-600); }
     .conn-line { flex: 1; height: 2px; position: relative; }
     .conn-dash { width: 100%; height: 100%; border-top: 2px dashed var(--line-200); }
     .conn-arrow { position: absolute; top: 50%; left: 0; width: 8px; height: 8px; background: var(--honey-500); border-radius: 50%; transform: translateY(-50%); animation: arrowMove 3s ease-in-out infinite; }
@@ -154,6 +147,8 @@ function identiconSvg(id: string, name: string, size: number = 36): string {
     .btn-sm { padding: 8px 16px; }
     .btn-primary { background: var(--honey-500); color: var(--ink-900); }
     .btn-primary:hover { background: var(--honey-600); }
+    .btn-outline { background: var(--color-surface); border: 1px solid var(--line-200); color: var(--ink-900); text-decoration: none; }
+    .btn-outline:hover { border-color: var(--honey-500); }
 
     @media (max-width: 768px) { .relation-connect { gap: 10px; } .conn-label { font-size: 10px; } }
   `]
@@ -165,8 +160,6 @@ export class MentoratDashboardComponent implements OnInit {
   apprentissages: any[] = [];
   suiviNotes: Record<string, string> = {};
   loading = signal(true);
-
-  identiconSvg = identiconSvg;
 
   ngOnInit() {
     this.http.get<any[]>('/api/skills/mentorats').subscribe({

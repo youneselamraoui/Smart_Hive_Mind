@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 function arcGauge(pct: number): string {
   const r = 38, circumference = 2 * Math.PI * r;
@@ -19,7 +20,7 @@ function arcGauge(pct: number): string {
 @Component({
   selector: 'app-mission-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, SafeHtmlPipe],
   template: `
     <div class="section">
       <div class="section-head">
@@ -53,7 +54,7 @@ function arcGauge(pct: number): string {
                   <span class="deadline">Limite: {{ (m.dateLimite | date:'dd/MM/yyyy') || 'Non renseignée' }}</span>
                 </div>
                 @if (m.matchingScore !== undefined) {
-                  <div class="match-gauge" [innerHTML]="arcGauge(m.matchingScore * 100)"></div>
+                  <div class="match-gauge" [innerHTML]="arcGauge(m.matchingScore * 100) | safeHtml"></div>
                 }
               </div>
             </div>

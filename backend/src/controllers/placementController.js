@@ -24,9 +24,11 @@ const Mission = require("../models/Mission");
 const ValidationCompetence = require("../models/ValidationCompetence");
 const Membre = require("../models/Membre");
 const profilService = require("../services/profilService");
+const { getProbabiliteSucces, getProfilOuNull } = require("../services/matchingScoreService");
 
 /**
  * Postuler a une offre (cree une candidature).
+ * Le score de matching est calcule par ai-predictive (best-effort).
  */
 exports.postuler = async (req, res) => {
     try {
@@ -46,10 +48,16 @@ exports.postuler = async (req, res) => {
             return res.status(409).json({ error: "Vous avez deja postule a cette offre." });
         }
 
+        const profil = await getProfilOuNull(membreId);
+        const probabiliteSucces = profil
+            ? await getProbabiliteSucces(offre, profil)
+            : undefined;
+
         const candidature = await Candidature.create({
             offreId,
             membreId,
             lettreMotivation: lettreMotivation || "",
+            ...(probabiliteSucces !== undefined ? { probabiliteSucces } : {}),
         });
 
         res.status(201).json({
@@ -57,6 +65,7 @@ exports.postuler = async (req, res) => {
             candidature: {
                 id: candidature._id,
                 statut: candidature.statut,
+                ...(probabiliteSucces !== undefined ? { probabiliteSucces } : {}),
             },
         });
     } catch (err) {

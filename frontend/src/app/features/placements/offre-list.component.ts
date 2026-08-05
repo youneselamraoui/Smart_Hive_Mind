@@ -1,7 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ToastService } from '../../core/toast.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 function arcGauge(pct: number): string {
   const r = 38, cx = 48, cy = 48;
@@ -20,10 +22,15 @@ function arcGauge(pct: number): string {
 @Component({
   selector: 'app-offre-list',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink, SafeHtmlPipe],
   template: `
     <div class="page">
-      <div class="page-head"><div><h1>Offres</h1><p>Emplois et missions disponibles</p></div></div>
+      <div class="page-head"><div><h1>Offres</h1><p>Emplois et missions disponibles</p></div>
+        <div class="head-actions">
+          <a class="link-btn" routerLink="/placements/candidatures">Mes candidatures</a>
+          <a class="link-btn" routerLink="/placements/accepter-candidature">Gérer les candidatures</a>
+        </div>
+      </div>
 
       <div class="filters">
         <select class="filter-sel" [value]="selectedType" (change)="selectedType = $any($event.target).value">
@@ -54,7 +61,7 @@ function arcGauge(pct: number): string {
               </div>
               <div class="card-foot">
                 @if (o.matchingScore !== undefined) {
-                  <div class="match-gauge" [innerHTML]="arcGauge(o.matchingScore * 100)"></div>
+                  <div class="match-gauge" [innerHTML]="arcGauge(o.matchingScore * 100) | safeHtml"></div>
                 }
                 @if (o.statut === 'ouverte') {
                   <button class="btn btn-primary" (click)="postuler(o)">Postuler</button>
@@ -73,6 +80,9 @@ function arcGauge(pct: number): string {
     .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .page-head h1 { font-size: var(--text-2xl); margin: 0 0 2px; }
     .page-head p { margin: 0; font-size: var(--text-sm); color: var(--ink-700); }
+    .head-actions { display: flex; gap: 12px; }
+    .link-btn { font-size: var(--text-sm); font-weight: 500; color: var(--ink-700); text-decoration: none; transition: color var(--transition); }
+    .link-btn:hover { color: var(--honey-600); }
 
     .filters { display: flex; gap: 10px; margin-bottom: 20px; }
     .filter-sel { padding: 6px 14px; border: 1px solid var(--line-200); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); background: var(--color-surface); color: var(--ink-900); outline: none; cursor: pointer; }

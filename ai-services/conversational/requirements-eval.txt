@@ -1,0 +1,15 @@
+# Dependances d'EVALUATION RAGAS uniquement (hors runtime Docker du service).
+# Installees a la demande, jamais dans l'image ai-conversational :
+#   pip install -r requirements-eval.txt
+-r requirements.txt
+
+# Cadre RAGAS pour l'evaluation du pipeline RAG (cahier des charges 5.7).
+# 0.2.x pinne : API stable (evaluate(dataset, metrics, llm=, embeddings=)).
+ragas==0.2.15
+
+# Compatibilite : ragas importe langchain_community.chat_models.vertexai,
+# module supprime a partir de langchain-community 0.4.0 (pin 0.3.x requis).
+langchain-community==0.3.29
+
+# Provider Gemini (juge RAGAS + embeddings).
+langchain-google-genai

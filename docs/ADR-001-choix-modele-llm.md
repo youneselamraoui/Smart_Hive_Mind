@@ -151,8 +151,8 @@ Le tier gratuit Gemini suffit pour le volume du prototype. Le registre des risqu
 
 ## Références
 
-- [Code client Gemini partagé](../ai-services/diagnostic/src/gemini_client.py) — exemple de l'encapsulation
+- [Code client Gemini partagé](../ai-services/diagnostic/src_diagnostic/gemini_client.py) — exemple de l'encapsulation
 - Cahier des charges §5.7 (document externe) — section à mettre à jour
 - Veille scientifique §6.6–6.7 (document externe) — sections à marquer "hors périmètre"
-- [Client embedding batch avec retry](../ai-services/diagnostic/src/gemini_client.py) — gestion des quotas
-- [Client génération avec system prompt](../ai-services/conversational/src/gemini_client.py)
+- [Client embedding batch avec retry](../ai-services/diagnostic/src_diagnostic/gemini_client.py) — gestion des quotas
+- [Client génération avec system prompt](../ai-services/conversational/src_conversational/gemini_client.py)

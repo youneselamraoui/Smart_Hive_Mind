@@ -1,6 +1,6 @@
 const publicationSchema = require("./publicationSchema");
 const { inscriptionSchema, connexionSchema } = require("./membreSchema");
-const evaluationSchema = require("./evaluationSchema");
+const { evaluationSchema, evaluerPrestationSchema } = require("./evaluationSchema");
 const { createEvenementSchema } = require("./evenementSchema");
 const { createOffreSchema } = require("./offreSchema");
 const { createBountySchema } = require("./bountySchema");
@@ -22,6 +22,7 @@ module.exports = {
     inscriptionSchema,
     connexionSchema,
     evaluationSchema,
+    evaluerPrestationSchema,
     createEvenementSchema,
     createOffreSchema,
     createBountySchema,

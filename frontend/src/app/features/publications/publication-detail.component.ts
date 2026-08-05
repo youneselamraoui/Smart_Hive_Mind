@@ -5,11 +5,12 @@ import { DatePipe } from '@angular/common';
 import { HexSealComponent } from '../../core/hex-seal.component';
 import { ToastService } from '../../core/toast.service';
 import { JournalService } from '../journal/journal.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 @Component({
   selector: 'app-publication-detail',
   standalone: true,
-  imports: [RouterLink, DatePipe, HexSealComponent],
+  imports: [RouterLink, DatePipe, HexSealComponent, SafeHtmlPipe],
   template: `
     <div class="detail-page">
       <a routerLink="/publications" class="back-link">
@@ -28,6 +29,12 @@ import { JournalService } from '../journal/journal.service';
             <div class="detail-header">
               <h1>{{ p?.titre }}</h1>
               <div class="detail-meta">
+                @if (p?.auteur?._id) {
+                  <a class="pub-auteur" [routerLink]="['/app', 'membre', p.auteur._id]">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    {{ p.auteur.prenom }} {{ p.auteur.nom }}
+                  </a>
+                }
                 <span class="pub-type" [class]="'type--' + (p?.type || 'libre')">{{ p?.type }}</span>
                 <span class="pub-date">{{ p?.createdAt | date:'dd MMM yyyy · HH:mm' }}</span>
               </div>
@@ -41,17 +48,17 @@ import { JournalService } from '../journal/journal.service';
                 @if (evalResult()) { @let er = evalResult();
                   <div class="eval-grid">
                     <div class="eval-card eval--pairs">
-                      <div class="eval-icon" [innerHTML]="evalIcons.pairs"></div>
+                      <div class="eval-icon" [innerHTML]="evalIcons.pairs | safeHtml"></div>
                       <span class="eval-label">Pairs</span>
                       <span class="eval-score">{{ ((er?.evaluation?.scoreGlobal ?? 0) * 100).toFixed(0) }}%</span>
                     </div>
                     <div class="eval-card eval--experts">
-                      <div class="eval-icon" [innerHTML]="evalIcons.experts"></div>
+                      <div class="eval-icon" [innerHTML]="evalIcons.experts | safeHtml"></div>
                       <span class="eval-label">Experts</span>
                       <span class="eval-score">{{ ((er?.evaluation?.scoreGlobal ?? 0) * 100).toFixed(0) }}%</span>
                     </div>
                     <div class="eval-card eval--ia">
-                      <div class="eval-icon" [innerHTML]="evalIcons.ia"></div>
+                      <div class="eval-icon" [innerHTML]="evalIcons.ia | safeHtml"></div>
                       <span class="eval-label">IA</span>
                       <span class="eval-score">{{ ((er?.evaluation?.scoreGlobal ?? 0) * 100).toFixed(0) }}%</span>
                     </div>
@@ -124,7 +131,11 @@ import { JournalService } from '../journal/journal.service';
               }
             </div>
 
-            @if (journalSelectOpen()) {
+              <a class="btn btn-outline" routerLink="/app/publications/verify">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                Vérifier une autre preuve
+              </a>
+              @if (journalSelectOpen()) {
               <div class="journal-submit">
                 <select class="journal-select" [value]="selectedJournalId()" (change)="onJournalChange($event)">
                   <option value="">Choisir un journal…</option>
@@ -181,6 +192,8 @@ import { JournalService } from '../journal/journal.service';
     .detail-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
     .pub-type { font-size: var(--text-xs); font-weight: 600; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .pub-auteur { display: inline-flex; align-items: center; gap: 5px; font-size: var(--text-sm); font-weight: 500; color: var(--ink-700); text-decoration: none; transition: color var(--transition); }
+    .pub-auteur:hover { color: var(--honey-600); }
     .type--these { background: rgba(91,79,224,0.1); color: var(--agentic-500); }
     .type--pfe { background: rgba(31,158,109,0.1); color: var(--verify-500); }
     .type--pfa { background: rgba(217,160,43,0.1); color: var(--honey-600); }

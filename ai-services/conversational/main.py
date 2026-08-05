@@ -1,8 +1,8 @@
 import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from src.vectorstore import search, index_document
-from src.generator import generate_answer, assist_writing
+from src_conversational.vectorstore import search, index_document
+from src_conversational.generator import generate_answer, assist_writing, generate_contenu
 
 if not os.environ.get("GEMINI_API_KEY"):
     raise RuntimeError("GEMINI_API_KEY manquante")
@@ -18,6 +18,11 @@ class AskRequest(BaseModel):
 class AssistWritingRequest(BaseModel):
     brouillon: str
     type: str
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    type: str = "libre"
+    ton: str = "neutre"
 
 class IndexDocumentRequest(BaseModel):
     id: str
@@ -39,6 +44,15 @@ async def ask(req: AskRequest):
         )
     context = search(req.question, k=5, scope=req.scope.replace("-", "_"))
     result = generate_answer(req.question, context)
+    result["contextes"] = [c["texte"] for c in context]
+    # Dedoublonne les sources par doc_id : si plusieurs chunks d'un meme
+    # document sont recuperes, la source ne doit apparaitre qu'une fois.
+    vus, sources = set(), []
+    for c in context:
+        if c["id"] not in vus:
+            vus.add(c["id"])
+            sources.append(c["id"])
+    result["sources"] = sources
     return result
 
 @app.post("/conversational/index-publications")
@@ -53,3 +67,9 @@ async def assist(req: AssistWritingRequest):
         raise HTTPException(status_code=400, detail="Le brouillon ne peut pas etre vide.")
     result = assist_writing(req.brouillon, req.type)
     return result
+
+@app.post("/conversational/generate")
+async def generate(req: GenerateRequest):
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail="Le prompt ne peut pas etre vide.")
+    return generate_contenu(req.prompt, req.type, req.ton)

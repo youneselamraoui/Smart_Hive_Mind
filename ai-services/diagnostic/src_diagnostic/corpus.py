@@ -1,7 +1,7 @@
 import os
 import time
 from pymongo import MongoClient
-from src.gemini_client import get_embeddings_batch
+from src_diagnostic.gemini_client import get_embeddings_batch
 
 REFRESH_INTERVAL = 600
 BATCH_SIZE = 25

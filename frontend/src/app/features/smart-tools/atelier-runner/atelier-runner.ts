@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
 import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 import { ToastService } from '../../../core/toast.service';
 import { EmptyStateComponent } from '../../../core/empty-state.component';
+import { SafeHtmlPipe } from '../../../core/safe-html.pipe';
 
 const STEP_ICONS: Record<string, string> = {
   selection: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`,
@@ -27,7 +27,7 @@ function iconFor(label: string): string {
 @Component({
   selector: 'app-atelier-runner',
   standalone: true,
-  imports: [FormsModule, EmptyStateComponent],
+  imports: [EmptyStateComponent, SafeHtmlPipe],
   template: `
     <div class="page">
       <div class="page-head">
@@ -69,9 +69,9 @@ function iconFor(label: string): string {
                   } @else if (etape.statut === 'echec') {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                   } @else if (etape.statut === 'en_cours') {
-                    <div class="tl-node-icon" [innerHTML]="iconFor(etape.label)"></div>
+                    <div class="tl-node-icon" [innerHTML]="iconFor(etape.label) | safeHtml"></div>
                   } @else {
-                    <div class="tl-node-icon dim" [innerHTML]="iconFor(etape.label)"></div>
+                    <div class="tl-node-icon dim" [innerHTML]="iconFor(etape.label) | safeHtml"></div>
                   }
                 </div>
                 <!-- Content -->
@@ -88,11 +88,9 @@ function iconFor(label: string): string {
 
           @if (a.statutGlobal === 'en_cours') {
             <div class="runner-actions">
-              <div class="progress-form">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                <input class="progress-input" type="text" placeholder="Progression…" [(ngModel)]="progressMsg" />
-                <button class="btn btn-outline btn-sm" (click)="reportProgress(a._id)">Signaler</button>
-              </div>
+              <button class="btn btn-outline btn-sm" [disabled]="!nextPendingIndex(a)" (click)="reportProgress(a._id, nextPendingIndex(a))">
+                Signaler l'étape en cours
+              </button>
               <button class="btn btn-primary" (click)="finalize(a._id)">Finaliser l'atelier</button>
             </div>
           }
@@ -160,16 +158,13 @@ function iconFor(label: string): string {
     .tl-link:hover { text-decoration: underline; }
 
     .runner-actions { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line-200); display: flex; flex-direction: column; gap: 12px; }
-    .progress-form { display: flex; align-items: center; gap: 8px; }
-    .progress-form svg { color: var(--agentic-500); flex-shrink: 0; }
-    .progress-input { flex: 1; padding: 8px 12px; border: 1px solid var(--line-200); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-sm); outline: none; background: var(--color-surface); color: var(--ink-900); transition: border-color var(--transition); }
-    .progress-input:focus { border-color: var(--agentic-500); }
 
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border: none; border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer; transition: all var(--transition); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn-primary { background: var(--agentic-500); color: var(--paper-50); }
     .btn-primary:hover { background: var(--agentic-500); }
     .btn-outline { background: var(--color-surface); border: 1px solid var(--line-200); color: var(--ink-900); }
-    .btn-outline:hover { border-color: var(--agentic-500); }
+    .btn-outline:hover:not(:disabled) { border-color: var(--agentic-500); }
     .btn-sm { padding: 6px 14px; font-size: var(--text-xs); }
   `]
 })
@@ -180,7 +175,6 @@ export class AtelierRunnerComponent implements OnInit, OnDestroy {
   private toast = inject(ToastService);
 
   atelier?: any;
-  progressMsg = '';
   error = signal<string | null>(null);
   private sub?: Subscription;
   private id = '';
@@ -205,18 +199,24 @@ export class AtelierRunnerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() { this.sub?.unsubscribe(); }
 
-  reportProgress(id: string) {
-    if (!this.progressMsg.trim()) return;
-    this.http.post('/api/smart-tools/ateliers/' + id + '/progress', { progression: this.progressMsg }).subscribe({
-      next: () => { this.toast.success('Progression signalée.'); this.progressMsg = ''; },
-      error: () => this.toast.error('Erreur.'),
+  nextPendingIndex(a: any): number {
+    const etapes: any[] = a?.etapes || [];
+    const idx = etapes.findIndex(e => e?.statut === 'en_attente');
+    return idx >= 0 ? idx : -1;
+  }
+
+  reportProgress(id: string, index: number) {
+    if (index < 0) return;
+    this.http.post('/api/smart-tools/ateliers/' + id + '/progress', { etape: { index, statut: 'en_cours' } }).subscribe({
+      next: () => { this.toast.success('Progression signalée.'); },
+      error: e => this.toast.error(e.error?.error || 'Erreur.'),
     });
   }
 
   finalize(id: string) {
-    this.http.post('/api/smart-tools/ateliers/' + id + '/finalize', {}).subscribe({
+    this.http.post('/api/smart-tools/ateliers/' + id + '/finalize', { statutGlobal: 'termine' }).subscribe({
       next: () => { this.toast.success('Atelier finalisé.'); this.router.navigate(['/smart-tools']); },
-      error: () => this.toast.error('Erreur.'),
+      error: e => this.toast.error(e.error?.error || 'Erreur.'),
     });
   }
 }

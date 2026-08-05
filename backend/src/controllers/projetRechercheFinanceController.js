@@ -15,7 +15,7 @@ exports.createProjetRechercheFinance = async (req, res) => {
             theme,
             budget,
             livrables,
-            industrielId: req.membre._id,
+            industrielId: req.membre.id,
             structureRechercheId,
         });
 
@@ -117,7 +117,7 @@ exports.candidaterProjet = async (req, res) => {
         }
 
         const estMembre = structure.membres.some(
-            (m) => m.toString() === req.membre._id.toString()
+            (m) => m.toString() === req.membre.id.toString()
         );
         if (!estMembre) {
             return res
@@ -169,7 +169,7 @@ exports.attribuerProjet = async (req, res) => {
             return res.status(404).json({ error: "Projet de recherche finance introuvable." });
         }
 
-        if (projet.industrielId.toString() !== req.membre._id.toString()) {
+        if (projet.industrielId.toString() !== req.membre.id.toString()) {
             return res
                 .status(403)
                 .json({ error: "Seul l'industriel ayant publie ce projet peut l'attribuer." });
