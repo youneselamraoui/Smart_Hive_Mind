@@ -45,7 +45,7 @@ import { ToastService } from '../../core/toast.service';
           </div>
 
           <div class="form-actions">
-            <button type="button" class="btn-outline" (click)="router.navigate(['/marketplace/offres'])">Annuler</button>
+            <button type="button" class="btn-outline" (click)="router.navigate(['/marketplace'])">Annuler</button>
             <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
               {{ loading() ? 'Publication…' : 'Publier l\'offre' }}
             </button>
@@ -97,7 +97,7 @@ export class OffreFormComponent implements OnInit, OnDestroy {
     this.loading.set(true);
 
     this.http.post('/api/offres', this.form.value).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => { this.toast.success('Offre publiée avec succès'); this.router.navigate(['/marketplace/offres']); },
+      next: () => { this.toast.success('Offre publiée avec succès'); this.router.navigate(['/marketplace']); },
       error: () => { this.loading.set(false); this.toast.error('Erreur lors de l\'enregistrement'); },
     });
   }

@@ -23,9 +23,12 @@ const Offre = require("../models/Offre");
 const Mission = require("../models/Mission");
 const ValidationCompetence = require("../models/ValidationCompetence");
 const Membre = require("../models/Membre");
+const profilService = require("../services/profilService");
+const { getProbabiliteSucces, getProfilOuNull } = require("../services/matchingScoreService");
 
 /**
  * Postuler a une offre (cree une candidature).
+ * Le score de matching est calcule par ai-predictive (best-effort).
  */
 exports.postuler = async (req, res) => {
     try {
@@ -45,10 +48,16 @@ exports.postuler = async (req, res) => {
             return res.status(409).json({ error: "Vous avez deja postule a cette offre." });
         }
 
+        const profil = await getProfilOuNull(membreId);
+        const probabiliteSucces = profil
+            ? await getProbabiliteSucces(offre, profil)
+            : undefined;
+
         const candidature = await Candidature.create({
             offreId,
             membreId,
             lettreMotivation: lettreMotivation || "",
+            ...(probabiliteSucces !== undefined ? { probabiliteSucces } : {}),
         });
 
         res.status(201).json({
@@ -56,6 +65,7 @@ exports.postuler = async (req, res) => {
             candidature: {
                 id: candidature._id,
                 statut: candidature.statut,
+                ...(probabiliteSucces !== undefined ? { probabiliteSucces } : {}),
             },
         });
     } catch (err) {
@@ -177,25 +187,28 @@ exports.cloturerMission = async (req, res) => {
                 note,
                 validePar: clientId,
             });
-        }
 
-        // Mettre a jour le reputationScore du membre (moyenne ponderee)
-        const membre = await Membre.findById(mission.membreId);
-        if (membre) {
-            const nbMissions = await Mission.countDocuments({
-                membreId: mission.membreId,
-                statut: "terminee",
+            const profil = await profilService.getOrCreateProfil(mission.membreId);
+            profil.competencesValidees.push({
+                competence,
+                note,
+                missionId: mission._id,
+                validePar: clientId,
+                date: new Date(),
             });
-
-            const ancienScore = membre.reputationScore || 0;
-            const nouveauScore =
-                nbMissions > 0
-                    ? (ancienScore * (nbMissions - 1) + note * 20) / nbMissions
-                    : note * 20;
-
-            membre.reputationScore = Math.round(Math.min(nouveauScore, 100) * 100) / 100;
-            await membre.save();
+            await profil.save();
         }
+
+        const profil = await profilService.getOrCreateProfil(mission.membreId);
+        profil.historiqueMissions.push({
+            missionId: mission._id,
+            evaluationClient: note,
+        });
+        await profil.save();
+
+        await profilService.recalculerReputationScore(mission.membreId);
+
+        const membre = await Membre.findById(mission.membreId);
 
         res.json({
             message: "Mission cloturee et evaluation enregistree.",

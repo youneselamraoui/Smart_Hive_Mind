@@ -4,7 +4,8 @@ require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
 const dns = require("dns");
 const mongoose = require("mongoose");
-const { faker } = require("@faker-js/faker");
+const { fakerFR } = require("@faker-js/faker");
+const faker = fakerFR;
 
 // Utiliser Google DNS si le DNS local bloque Atlas (ex: box FAI / réseau scolaire)
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
@@ -39,6 +40,10 @@ const Temoignage = require("./src/models/Temoignage");
 const Evenement = require("./src/models/Evenement");
 const Notification = require("./src/models/Notification");
 const Groupement = require("./src/models/Groupement");
+const StructureRecherche = require("./src/models/StructureRecherche");
+const Journal = require("./src/models/Journal");
+const ProjetRechercheFinance = require("./src/models/ProjetRechercheFinance");
+const ProfilCertifie = require("./src/models/ProfilCertifie");
 
 // Modifiez ces volumes selon vos besoins.
 const COUNTS = {
@@ -49,11 +54,22 @@ const COUNTS = {
   modelesIA: 10, outils: 10, ateliers: 10, taches: 10, forums: 4,
   thematiques: 8, sujets: 20, discussions: 45, sondages: 10,
   temoignages: 12, evenements: 10, notifications: 30, groupements: 8,
+  structuresRecherche: 6, journaux: 6, projetsFinance: 8, profilsCertifies: 10,
 };
 
 // Mot de passe de tous les comptes seeds : Password123!
 // Hash bcrypt (10 rounds) verifie avec bcryptjs.compareSync("Password123!", hash).
 const SEEDED_PASSWORD_HASH = "$2a$10$2Glgnqy1GI1sEG35P0alPe8djKHepEvwOq10dimFh65YsE1Tp3I9q";
+
+// Comptes de demonstration : un par role.
+const DEMO_ACCOUNTS = [
+  { email: "admin@smart-hive.local", prenom: "Sarah", nom: "Benali", role: "admin" },
+  { email: "encadrant@smart-hive.local", prenom: "Karim", nom: "El Amrani", role: "encadrant" },
+  { email: "etudiant@smart-hive.local", prenom: "Yassine", nom: "Alaoui", role: "etudiant" },
+  { email: "organisation@smart-hive.local", prenom: "TechNova", nom: "Maroc", role: "organisation" },
+];
+
+const WIPE = process.env.SEED_WIPE === "1";
 
 const choices = {
   role: ["etudiant", "encadrant", "admin", "organisation"],
@@ -88,14 +104,27 @@ async function seed() {
   try {
     if (!process.env.MONGO_URI) throw new Error("MONGO_URI est absent de backend/.env");
     await mongoose.connect(process.env.MONGO_URI);
+    if (WIPE) {
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      for (const c of collections) {
+        if (!c.name.startsWith("system.")) await mongoose.connection.db.collection(c.name).deleteMany({});
+      }
+      console.log("Collections videes.");
+    }
     console.log("Connecte a MongoDB. Ajout de donnees factices sans suppression des donnees existantes.");
     const summary = {};
 
-  const membres = await insert("Membre", Membre, Array.from({ length: COUNTS.membres }, () => {
+  const membres = await insert("Membre", Membre, [
+    ...DEMO_ACCOUNTS.map((account) => ({
+      email: account.email, motDePasse: SEEDED_PASSWORD_HASH,
+      nom: account.nom, prenom: account.prenom, role: account.role,
+      reputationScore: faker.number.int({ min: 80, max: 100 }),
+    })),
+    ...Array.from({ length: COUNTS.membres }, () => {
     const prenom = faker.person.firstName();
     const nom = faker.person.lastName();
     return { email: `${prenom}.${nom}.${faker.string.uuid()}@smart-hive.local`.toLowerCase(), motDePasse: SEEDED_PASSWORD_HASH, nom, prenom, role: one(choices.role), reputationScore: faker.number.int({ min: 0, max: 100 }) };
-  }), summary);
+  })], summary);
 
   const publications = await insert("Publication", Publication, Array.from({ length: COUNTS.publications }, () => ({
     titre: faker.lorem.sentence({ min: 4, max: 9 }).replace(/\.$/, ""), contenu: text(), type: one(choices.publicationType), auteur: one(membres)._id,
@@ -140,8 +169,49 @@ async function seed() {
   await insert("Notification", Notification, Array.from({ length: COUNTS.notifications }, () => ({ destinataire: one(membres)._id, type: one(choices.notification), message: faker.lorem.sentence(), lien: "/tableau-de-bord", lu: faker.datatype.boolean() })), summary);
   await insert("Groupement", Groupement, Array.from({ length: COUNTS.groupements }, () => ({ nom: `${faker.word.adjective()} collectif`, theme: faker.word.noun(), description: text(), membres: some(membres, 3, 10).map(m => m._id), reglesAdhesion: faker.lorem.sentence() })), summary);
 
+  const structures = await insert("StructureRecherche", StructureRecherche, Array.from({ length: COUNTS.structuresRecherche }, () => ({
+    type: one(["centre", "laboratoire", "equipe"]),
+    nom: `${faker.company.name()} - ${one(["Centre de Recherche", "Laboratoire", "Equipe de Recherche"])}`,
+    membres: some(membres, 3, 8).map(m => m._id),
+    axes: faker.helpers.multiple(() => faker.lorem.words(3), { count: { min: 2, max: 5 } }),
+    productions: some(publications, 1, 5).map(p => p._id),
+  })), summary);
+
+  const industriels = membres.filter(m => m.role === "organisation");
+  await insert("ProjetRechercheFinance", ProjetRechercheFinance, Array.from({ length: COUNTS.projetsFinance }, () => ({
+    theme: faker.company.buzzPhrase(),
+    budget: amount(20000, 400000),
+    livrables: faker.helpers.multiple(() => ({ description: faker.lorem.sentence(), dateEcheance: futureDate(120), statut: one(["a_faire", "en_cours", "termine"]) }), { count: { min: 2, max: 4 } }),
+    industrielId: one(industriels)._id,
+    structureRechercheId: one(structures)._id,
+    statut: one(["candidature", "en_cours", "termine"]),
+    candidatures: some(structures, 1, 3).map(s => ({ equipeId: s._id, dateCandidature: pastDate(), statut: one(["soumise", "en_evaluation", "acceptee", "refusee"]) })),
+  })), summary);
+
+  await insert("Journal", Journal, Array.from({ length: COUNTS.journaux }, () => ({
+    nom: faker.company.name(),
+    domaines: faker.helpers.multiple(() => faker.lorem.words(2), { count: { min: 2, max: 4 } }),
+    description: text(),
+    comite: some(membres, 3, 6).map(m => ({ membreId: m._id, role: one(["editeur", "relecteur", "redacteur"]) })),
+    administrateurs: some(membres, 1, 3).map(m => m._id),
+    statut: one(["actif", "inactif"]),
+  })), summary);
+
+  await insert("ProfilCertifie", ProfilCertifie, some(membres, COUNTS.profilsCertifies, COUNTS.profilsCertifies).map(m => ({
+    membreId: m._id,
+    competencesValidees: some(missions, 1, 3).map(mission => ({ competence: faker.person.jobArea(), note: amount(0, 5), missionId: mission._id, validePar: one(membres)._id, date: pastDate() })),
+    formationsSuivies: some(formations, 0, 3).map(f => ({ formationId: f._id, dateCompletion: pastDate() })),
+    historiqueMissions: some(missions, 1, 4).map(mission => ({ missionId: mission._id, evaluationClient: amount(0, 5) })),
+    oeuvresProuvees: some(publications, 0, 3).map(p => ({ publicationId: p._id })),
+    reputationScore: faker.number.int({ min: 0, max: 100 }),
+  })), summary);
+
     console.table(summary);
     console.log(`Total cree : ${Object.values(summary).reduce((total, count) => total + count, 0)} documents.`);
+    console.log("\nComptes de demonstration (mot de passe : Password123!) :");
+    for (const account of DEMO_ACCOUNTS) {
+      console.log(`  ${account.role.padEnd(14)} ${account.email}`);
+    }
   } finally {
     await mongoose.disconnect();
   }

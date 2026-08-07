@@ -2,10 +2,12 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
 import { fadeInUp } from '../../core/animations';
 import { ICONS } from '../../core/icons';
 import { ToastService } from '../../core/toast.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 interface Mission {
   _id: string;
@@ -20,11 +22,11 @@ interface Mission {
 @Component({
   selector: 'app-cloturer-mission',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe, RouterLink, SafeHtmlPipe],
   template: `
     <div class="section" @fadeInUp>
       <div class="page-header">
-        <div class="header-icon" [innerHTML]="ICONS.placements"></div>
+        <div class="header-icon" [innerHTML]="ICONS.placements | safeHtml"></div>
         <div>
           <h1>Clôturer une mission</h1>
           <p>Évaluez le travail et mettez fin à la mission</p>
@@ -40,7 +42,7 @@ interface Mission {
       } @else {
         @if (missions.length === 0) {
           <div class="empty-state">
-            <div class="empty-icon" [innerHTML]="ICONS.placements"></div>
+            <div class="empty-icon" [innerHTML]="ICONS.placements | safeHtml"></div>
             <h3>Aucune mission en cours</h3>
             <p>Les missions en cours apparaîtront ici.</p>
           </div>
@@ -55,7 +57,7 @@ interface Mission {
             @for (m of missions; track m._id) {
               <div class="table-row" [class.expanded]="expandedId() === m._id">
                 <span class="cell-title">{{ m.offreId?.titre }}</span>
-                <span class="cell">{{ m.membreId?.prenom }} {{ m.membreId?.nom }}</span>
+                <span class="cell"><a class="cell-link" routerLink="/placements/profil/{{ m.membreId?._id }}">{{ m.membreId?.prenom }} {{ m.membreId?.nom }}</a></span>
                 <span class="cell">{{ m.periode.debut | date:'shortDate' }} — {{ m.periode.fin ? (m.periode.fin | date:'shortDate') : '…' }}</span>
                 <span class="cell-action">
                   @if (expandedId() === m._id) {
@@ -134,6 +136,8 @@ interface Mission {
     .table-row.expanded { border-bottom: 1px solid var(--color-border); }
     .cell-title { font-weight: 600; }
     .cell { color: var(--color-text-secondary); }
+    .cell-link { color: var(--color-primary-blue); text-decoration: none; font-weight: 600; }
+    .cell-link:hover { text-decoration: underline; }
     .cell-action { display: flex; gap: 6px; }
     .expand-content { grid-column: 1 / -1; padding: 12px 0 4px; border-top: 1px solid var(--color-border); margin-top: 8px; }
     .expand-content form { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; max-width: 400px; }

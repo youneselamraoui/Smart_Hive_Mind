@@ -4,11 +4,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import numpy as np
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "src", "model.joblib")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "src_predictive", "model.joblib")
 
 if not os.path.exists(MODEL_PATH):
     raise RuntimeError(
-        "Modele non entraine : lancer 'python src/train.py' d'abord"
+        "Modele non entraine : lancer 'python src_predictive/train.py' d'abord"
     )
 
 model = joblib.load(MODEL_PATH)

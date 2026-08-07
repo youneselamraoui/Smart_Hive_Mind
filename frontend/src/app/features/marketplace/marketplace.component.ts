@@ -1,4 +1,6 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 import { PrestationListComponent } from './prestation-list.component';
 import { BountyListComponent } from './bounty-list.component';
 import { TacheCrowdsourcingBoardComponent } from './tache-crowdsourcing-board.component';
@@ -8,18 +10,26 @@ import { BourseListComponent } from './bourse-list.component';
 @Component({
   selector: 'app-marketplace',
   standalone: true,
-  imports: [PrestationListComponent, BountyListComponent, TacheCrowdsourcingBoardComponent, OffreListComponent, BourseListComponent],
+  imports: [RouterLink, PrestationListComponent, BountyListComponent, TacheCrowdsourcingBoardComponent, OffreListComponent, BourseListComponent, SafeHtmlPipe],
   template: `
     <div class="page">
       <div class="page-head">
         <h1>Marketplace</h1>
         <p>Prestations, bounties, offres et opportunités</p>
+        <div class="page-actions">
+          @if (activeTab() === 'offres') {
+            <a class="btn btn-primary" routerLink="/marketplace/offres/new">Publier une offre</a>
+          }
+          @if (activeTab() === 'bourses') {
+            <a class="btn btn-primary" routerLink="/marketplace/bourses/new">Créer une bourse</a>
+          }
+        </div>
       </div>
 
       <div class="tabs">
         @for (tab of tabs; track tab.key; let i = $index) {
           <button class="tab" [class.tab--active]="activeTab() === tab.key" (click)="activeTab.set(tab.key)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" [innerHTML]="tab.icon"></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" [innerHTML]="tab.icon | safeHtml"></svg>
             {{ tab.label }}
           </button>
         }
@@ -41,6 +51,9 @@ import { BourseListComponent } from './bourse-list.component';
     .page-head { margin-bottom: 24px; }
     .page-head h1 { font-size: var(--text-2xl); margin: 0 0 2px; }
     .page-head p { margin: 0; font-size: var(--text-sm); color: var(--ink-700); }
+    .page-actions { margin-top: 12px; display: flex; gap: 8px; }
+    .page-actions a { padding: 8px 16px; border-radius: var(--radius-sm); background: var(--honey-500); color: var(--ink-900); font-size: var(--text-sm); font-weight: 600; text-decoration: none; transition: filter var(--transition); }
+    .page-actions a:hover { filter: brightness(1.08); }
 
     .tabs { display: flex; position: relative; border-bottom: 1px solid var(--line-200); margin-bottom: 24px; overflow-x: auto; }
     .tab { display: flex; align-items: center; gap: 6px; padding: 10px 20px; background: none; border: none; font-size: var(--text-sm); font-family: var(--font-body); color: var(--ink-700); cursor: pointer; white-space: nowrap; transition: color var(--transition); position: relative; z-index: 1; }

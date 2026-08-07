@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RatingModule } from 'primeng/rating';
 import { SkeletonModule } from 'primeng/skeleton';
+import { RouterLink } from '@angular/router';
 import { ToastService } from '../../core/toast.service';
 import { ContentCardComponent } from '../../core/content-card.component';
 import { EmptyStateComponent } from '../../core/empty-state.component';
@@ -22,10 +23,10 @@ const FORMAT_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-formation-list',
   standalone: true,
-  imports: [FormsModule, ContentCardComponent, EmptyStateComponent, RatingModule, SkeletonModule],
+  imports: [FormsModule, ContentCardComponent, EmptyStateComponent, RatingModule, SkeletonModule, RouterLink],
   template: `
     <div class="page">
-      <div class="page-head"><div><h1>Formations</h1><p>Développez vos compétences</p></div></div>
+      <div class="page-head"><div><h1>Formations</h1><p>Développez vos compétences</p></div><a class="new-btn" routerLink="/app/skills/formations/creer">Créer une formation</a></div>
 
       <div class="search-bar">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -87,9 +88,11 @@ const FORMAT_LABELS: Record<string, string> = {
   `,
   styles: [`
     :host { display: block; }
-    .page-head { margin-bottom: 20px; }
+    .page-head { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .page-head h1 { font-size: var(--text-2xl); margin: 0 0 2px; }
     .page-head p { margin: 0; font-size: var(--text-sm); color: var(--ink-700); }
+    .new-btn { padding: 8px 16px; border-radius: var(--radius-sm); background: var(--honey-500); color: var(--ink-900); font-size: var(--text-sm); font-weight: 600; text-decoration: none; white-space: nowrap; transition: filter var(--transition); }
+    .new-btn:hover { filter: brightness(1.08); }
 
     .search-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding: 8px 14px; background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); transition: border-color var(--transition); }
     .search-bar:focus-within { border-color: var(--honey-500); }

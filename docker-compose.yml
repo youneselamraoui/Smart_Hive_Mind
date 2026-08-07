@@ -30,10 +30,13 @@ services:
       - NODE_ENV=development
       - MONGO_URI=mongodb://mongo:27017/smart-hive-mind
       - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:4000
-      - AI_DIAGNOSTIC_URL=http://ai-diagnostic:8000
-      - AI_PREDICTIVE_URL=http://ai-predictive:8000
-      - AI_DECISIONNEL_URL=http://ai-decisionnel:8000
-      - AI_CONVERSATIONAL_URL=http://ai-conversational:8000
+      - IA_DIAGNOSTIC_URL=http://ai-diagnostic:8000
+      - IA_PREDICTIVE_URL=http://ai-predictive:8000
+      - IA_DECISIONNEL_URL=http://ai-decisionnel:8000
+      - IA_CONVERSATIONAL_URL=http://ai-conversational:8000
+      - IA_OPTIMISATION_URL=http://ai-optimisation:8000
+      - IA_AGENTIC_URL=http://ai-agentic:8000
+      - BACKEND_INTERNAL_URL=http://backend:3000
       - JWT_SECRET=${JWT_SECRET}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SEPOLIA_RPC_URL=${SEPOLIA_RPC_URL}
@@ -68,7 +71,7 @@ services:
     networks:
       - shm-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -83,7 +86,7 @@ services:
     networks:
       - shm-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -100,7 +103,7 @@ services:
     networks:
       - shm-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -120,7 +123,7 @@ services:
     networks:
       - shm-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -132,12 +135,28 @@ services:
       - "8005:8000"
     environment:
       - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+      - BACKEND_URL=http://backend:3000
     depends_on:
       - mongo
     networks:
       - shm-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  ai-optimisation:
+    build: ./ai-services/optimisation
+    ports:
+      - "8006:8000"
+    depends_on:
+      - mongo
+    networks:
+      - shm-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -26,7 +26,7 @@ export const communauteRoutes: Routes = [
   {
     path: 'sondages',
     loadComponent: () =>
-      import('./sondage-widget/sondage-widget').then(m => m.SondageWidgetComponent),
+      import('./sondage-list.component').then(m => m.SondageListComponent),
     title: 'Sondages',
   },
   {

@@ -4,11 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { fadeInUp } from '../../core/animations';
 import { ICONS } from '../../core/icons';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, SafeHtmlPipe],
   templateUrl: './register.html',
   styleUrl: './register.css',
   animations: [fadeInUp],

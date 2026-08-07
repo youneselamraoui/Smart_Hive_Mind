@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const preuveSchema = require("./schemas/preuveSchema");
 
 const lotSchema = new mongoose.Schema(
     {
@@ -19,6 +20,7 @@ const tacheCrowdsourcingSchema = new mongoose.Schema(
         titre: { type: String, required: true, trim: true },
         lots: [lotSchema],
         remunerationTotale: { type: Number, default: 0, min: 0 },
+        preuve: { type: preuveSchema, default: () => ({}) },
     },
     { timestamps: true }
 );

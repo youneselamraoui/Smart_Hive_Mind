@@ -88,7 +88,7 @@ import { FormsModule } from '@angular/forms';
 export class AtelierStartComponent {
   private http = inject(HttpClient);
   private router = inject(Router);
-  types = [{ id: 'ia-neuro-symbolique', label: 'Atelier IA neuro-symbolique', description: 'Parcours complet : sélection de données → génération synthétique → entraînement → publication du modèle' }];
+  types = [{ id: 'neuro_symbolique', label: 'Atelier IA neuro-symbolique', description: 'Parcours complet : sélection de données → génération synthétique → entraînement → publication du modèle' }];
   nom = '';
   selectedType = '';
   submitting = signal(false);

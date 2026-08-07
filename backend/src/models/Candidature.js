@@ -18,6 +18,7 @@ const candidatureSchema = new mongoose.Schema(
             enum: ["en_attente", "acceptee", "refusee"],
             default: "en_attente",
         },
+        probabiliteSucces: { type: Number, min: 0, max: 1 },
     },
     { timestamps: true }
 );

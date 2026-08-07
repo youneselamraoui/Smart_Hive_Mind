@@ -3,34 +3,19 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../core/toast.service';
-
-function identiconSvg(id: string, name: string): string {
-  let hash = 0;
-  const str = id || name;
-  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-  const hue = Math.abs(hash % 360);
-  const cells: string[] = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const ci = r * 4 + (c < 2 ? c : 3 - c);
-      const on = ((hash >> (ci % 16)) & 1) === 1;
-      if (on) cells.push(`<rect x="${c * 5 + 2}" y="${r * 5 + 2}" width="5" height="5" rx="1" fill="hsl(${hue},40%,${50 + (ci % 3) * 12}%)" opacity="0.8"/>`);
-    }
-  }
-  return `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">${cells.join('')}</svg>`;
-}
+import { IdenticonComponent } from '../../core/identicon.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, IdenticonComponent],
   template: `
     <div class="page">
       <div class="page-head"><div><h1>Mon profil</h1></div></div>
 
       @if (membre(); as m) {
         <div class="hero">
-          <div class="hero-identicon" [innerHTML]="identicon(m._id, m.prenom + ' ' + m.nom)"></div>
+          <div class="hero-identicon"><app-identicon [id]="m._id" [name]="m.prenom + ' ' + m.nom"></app-identicon></div>
           <div class="hero-info">
             <h2>{{ m.prenom }} {{ m.nom }}</h2>
             <span class="role-tag" [class]="'role--' + (m.role || 'etudiant')">{{ m.role }}</span>
@@ -107,8 +92,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     email: ['', [Validators.required, Validators.email]],
     motDePasse: ['', [Validators.minLength(6)]],
   });
-
-  identicon = identiconSvg;
 
   ngOnInit() {
     this.http.get<any>('/api/auth/me').pipe(takeUntil(this.destroy$)).subscribe({

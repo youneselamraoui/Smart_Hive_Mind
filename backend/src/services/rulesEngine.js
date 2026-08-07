@@ -3,6 +3,73 @@ const SEUIL_ORIGINALITE_MIN = 0.3;
 const SEUIL_RIGUEUR_MIN = 0.4;
 const SEUIL_COMPLETUDE_MIN = 0.4;
 
+function evaluerRegle(regle, scores) {
+    if (!regle.actif || !regle.condition) return null;
+
+    try {
+        const parts = regle.condition.split(/\s+/);
+        if (parts.length !== 3) return null;
+
+        const [scoreKey, operator, rawValue] = parts;
+        const value = parseFloat(rawValue);
+        if (isNaN(value)) return null;
+
+        const score = scores[scoreKey];
+        if (score === undefined || score === null) return null;
+
+        let valide = false;
+        switch (operator) {
+            case "<":
+                valide = score < value;
+                break;
+            case "<=":
+                valide = score <= value;
+                break;
+            case ">":
+                valide = score > value;
+                break;
+            case ">=":
+                valide = score >= value;
+                break;
+            case "===":
+            case "==":
+                valide = score === value;
+                break;
+            default:
+                return null;
+        }
+
+        if (!valide) return null;
+
+        return {
+            regle: regle.nom,
+            valeur: score,
+            impact: regle.impactSiDeclenchee || "positif",
+            justification: `Regle '${regle.nom}' declenchee : ${scoreKey} ${operator} ${rawValue} (actuel: ${score}).`,
+        };
+    } catch {
+        return null;
+    }
+}
+
+const REGLES_PAR_DEFAUT = [
+    { nom: "similarite_moderee", condition: "similarite < 0.85", poids: 1, actif: true, impactSiDeclenchee: "positif" },
+    { nom: "similarite_excessive", condition: "similarite >= 0.85", poids: 1.5, actif: true, impactSiDeclenchee: "negatif" },
+    { nom: "originalite_elevee", condition: "originalite > 0.6", poids: 1, actif: true, impactSiDeclenchee: "positif" },
+    { nom: "originalite_insuffisante", condition: "originalite < 0.3", poids: 1, actif: true, impactSiDeclenchee: "negatif" },
+    { nom: "rigueur_insuffisante", condition: "rigueur < 0.4", poids: 1, actif: true, impactSiDeclenchee: "negatif" },
+    { nom: "completude_insuffisante", condition: "completude < 0.4", poids: 1, actif: true, impactSiDeclenchee: "negatif" },
+    { nom: "score_global_eleve", condition: "scoreGlobal >= 0.7", poids: 1, actif: true, impactSiDeclenchee: "positif" },
+    { nom: "score_global_faible", condition: "scoreGlobal < 0.3", poids: 1, actif: true, impactSiDeclenchee: "negatif" },
+    { nom: "coherence_faible_similarite_haute_originalite", condition: "similarite < 0.3", poids: 1.5, actif: true, impactSiDeclenchee: "positif" },
+];
+
+function appliquerRegles(regles, scores) {
+    return regles
+        .map((r) => evaluerRegle(r, scores))
+        .filter((j) => j !== null);
+}
+
 function generateJustification(diagnosticResult, decisionnelResult) {
     const regles = [];
 
@@ -137,4 +204,4 @@ function generateJustification(diagnosticResult, decisionnelResult) {
     return regles;
 }
 
-module.exports = { generateJustification };
+module.exports = { generateJustification, appliquerRegles, evaluerRegle, REGLES_PAR_DEFAUT };

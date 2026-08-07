@@ -1,10 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { HexSealComponent } from '../../core/hex-seal.component';
+import { ToastService } from '../../core/toast.service';
+import { TacheCrowdsourcingService } from './tache-crowdsourcing.service';
 
 @Component({
   selector: 'app-tache-crowdsourcing-board',
   standalone: true,
-  imports: [],
+  imports: [HexSealComponent],
   template: `
     <div class="section">
       <div class="section-head">
@@ -21,6 +24,28 @@ import { HttpClient } from '@angular/common/http';
         <div class="legend">
           <span class="legend-item"><span class="legend-dot dot--nouveau"></span> Lots réservés nouveaux profils (équité 10%)</span>
         </div>
+        @if (currentRole() === 'admin' && taches().length > 0) {
+          <div class="proof-list">
+            @for (t of taches(); track t._id) {
+              <div class="proof-row">
+                <app-hex-seal [status]="sealStatus(t)" [hash]="t.preuve?.txHash" [size]="26"></app-hex-seal>
+                <span class="proof-title">{{ t.titre }}</span>
+                <span class="proof-statut" [class]="'statut--' + sealStatus(t)">{{ sealLabel(t) }}</span>
+                @if (isAnchored(t)) {
+                  <a class="proof-sepolia" [href]="etherscanUrl(t)" target="_blank" rel="noopener noreferrer">Vérifier sur Sepolia</a>
+                } @else {
+                  <button class="proof-anchor" [disabled]="anchoringId() === t._id" (click)="ancrer(t)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    {{ anchoringId() === t._id ? 'Ancrage…' : 'Ancrer sur la blockchain' }}
+                  </button>
+                }
+              </div>
+            }
+            @if (anchorError()) {
+              <div class="proof-error">{{ anchorError() }}</div>
+            }
+          </div>
+        }
         <div class="kanban">
           @for (col of columns; track col.key) {
             <div class="kanban-col">
@@ -69,6 +94,21 @@ import { HttpClient } from '@angular/common/http';
     .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
     .dot--nouveau { background: var(--verify-500); }
 
+    .proof-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; padding: 12px; background: var(--ink-900); border-radius: var(--radius-md); }
+    .proof-row { display: flex; align-items: center; gap: 12px; color: var(--paper-50); padding: 6px 4px; border-bottom: 1px solid rgba(246,245,242,0.1); }
+    .proof-row:last-of-type { border-bottom: none; }
+    .proof-title { font-size: var(--text-sm); font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .proof-statut { font-size: var(--text-xs); font-weight: 500; font-family: var(--font-mono); white-space: nowrap; }
+    .statut--valide { color: var(--verify-500); }
+    .statut--en_attente { color: var(--honey-500); }
+    .statut--echec { color: var(--alert-500); }
+    .proof-anchor { display: inline-flex; align-items: center; gap: 6px; background: rgba(246,245,242,0.08); border: 1px solid rgba(246,245,242,0.2); color: var(--paper-50); padding: 5px 12px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: var(--text-xs); font-weight: 500; cursor: pointer; transition: all var(--transition); white-space: nowrap; }
+    .proof-anchor:hover:not(:disabled) { background: rgba(246,245,242,0.15); }
+    .proof-anchor:disabled { opacity: 0.45; cursor: not-allowed; }
+    .proof-sepolia { color: var(--honey-500); font-size: var(--text-xs); font-weight: 500; text-decoration: none; transition: opacity var(--transition); white-space: nowrap; }
+    .proof-sepolia:hover { opacity: 0.8; text-decoration: underline; }
+    .proof-error { font-size: var(--text-xs); color: var(--alert-500); background: rgba(196,67,46,0.08); padding: 6px 10px; border-radius: var(--radius-sm); }
+
     .skel-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
     .skel-col { background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); padding: 16px; }
     .skel-line { height: 12px; border-radius: 4px; background: var(--line-200); margin-bottom: 8px; animation: sh 1.5s infinite; }
@@ -98,8 +138,13 @@ import { HttpClient } from '@angular/common/http';
 })
 export class TacheCrowdsourcingBoardComponent implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
+  private tacheService = inject(TacheCrowdsourcingService);
   loading = signal(true);
   taches = signal<any[]>([]);
+  currentRole = signal<string | null>(null);
+  anchoringId = signal<string | null>(null);
+  anchorError = signal<string | null>(null);
 
   columns = [
     { key: 'ouverte', label: 'Ouverte' },
@@ -129,6 +174,50 @@ export class TacheCrowdsourcingBoardComponent implements OnInit {
       next: list => this.taches.set(list),
       error: () => this.taches.set([]),
       complete: () => this.loading.set(false),
+    });
+    this.http.get<{ role: string }>('/api/auth/me').subscribe({
+      next: m => this.currentRole.set(m.role),
+      error: () => this.currentRole.set(null),
+    });
+  }
+
+  sealStatus(t: any): 'valide' | 'en_attente' | 'echec' {
+    const s = t?.preuve?.statut;
+    if (s === 'ancre') return 'valide';
+    if (s === 'en_attente') return 'en_attente';
+    if (s === 'echec') return 'echec';
+    return 'en_attente';
+  }
+
+  sealLabel(t: any): string {
+    const s = t?.preuve?.statut;
+    if (s === 'ancre') return 'Ancrée';
+    if (s === 'en_attente') return 'En attente';
+    if (s === 'echec') return 'Échec';
+    return 'Non soumise';
+  }
+
+  isAnchored(t: any): boolean {
+    return t?.preuve?.statut === 'ancre';
+  }
+
+  etherscanUrl(t: any): string {
+    return 'https://sepolia.etherscan.io/tx/' + (t?.preuve?.txHash || '');
+  }
+
+  ancrer(t: any) {
+    this.anchoringId.set(t._id);
+    this.anchorError.set(null);
+    this.tacheService.ancrerTacheCrowdsourcing(t._id).subscribe({
+      next: () => {
+        this.anchoringId.set(null);
+        this.toast.success('Tâche ancrée sur la blockchain.');
+        this.http.get<any[]>('/api/taches-crowdsourcing').subscribe(list => this.taches.set(list));
+      },
+      error: e => {
+        this.anchoringId.set(null);
+        this.anchorError.set(e.error?.error || e.error?.detail || "Échec de l'ancrage blockchain.");
+      },
     });
   }
 

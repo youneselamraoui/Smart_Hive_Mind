@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { interval, Subscription } from 'rxjs';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 const TYPE_ICONS: Record<string, string> = {
   hackathon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>`,
@@ -21,10 +22,10 @@ function fmtDateRange(debut: string, fin: string): string {
 @Component({
   selector: 'app-evenement-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SafeHtmlPipe],
   template: `
     <div class="page">
-      <div class="page-head"><div><h1>Événements</h1><p>Hackathons, congrès, salons et concours</p></div></div>
+      <div class="page-head"><div><h1>Événements</h1><p>Hackathons, congrès, salons et concours</p></div><a class="new-btn" routerLink="/app/evenements/new">Créer un événement</a></div>
 
       <div class="search-bar">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -39,7 +40,7 @@ function fmtDateRange(debut: string, fin: string): string {
         <div class="grid">
           @for (e of filtered; track e._id) {
             <a class="card" [routerLink]="e._id">
-              <div class="card-type-icon" [class]="'type-icon--' + e.type" [innerHTML]="typeIcon(e.type)"></div>
+              <div class="card-type-icon" [class]="'type-icon--' + e.type" [innerHTML]="typeIcon(e.type) | safeHtml"></div>
               <h3>{{ e.titre }}</h3>
               <div class="card-dates">{{ fmtDate(e.dates.debut, e.dates.fin) }}</div>
               <div class="card-meta">
@@ -56,9 +57,11 @@ function fmtDateRange(debut: string, fin: string): string {
   `,
   styles: [`
     :host { display: block; }
-    .page-head { margin-bottom: 20px; }
+    .page-head { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .page-head h1 { font-size: var(--text-2xl); margin: 0 0 2px; }
     .page-head p { margin: 0; font-size: var(--text-sm); color: var(--ink-700); }
+    .new-btn { padding: 8px 16px; border-radius: var(--radius-sm); background: var(--honey-500); color: var(--ink-900); font-size: var(--text-sm); font-weight: 600; text-decoration: none; white-space: nowrap; transition: filter var(--transition); }
+    .new-btn:hover { filter: brightness(1.08); }
 
     .search-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding: 8px 14px; background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); transition: border-color var(--transition); }
     .search-bar:focus-within { border-color: var(--honey-500); }

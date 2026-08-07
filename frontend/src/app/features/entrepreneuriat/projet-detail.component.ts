@@ -1,12 +1,12 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-projet-detail',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   template: `
     @if (loading()) {
       <div class="page"><div class="skel-k"><div class="skel-line w-50"></div><div class="skel-line w-80"></div><div class="skel-line w-60"></div></div></div>
@@ -37,8 +37,21 @@ import { DatePipe } from '@angular/common';
           <div class="col-side">
             <div class="card-side">
               <h4>Informations</h4>
-              <div class="side-row"><span>Porteur</span><b>{{ p().porteur?.prenom }} {{ p().porteur?.nom }}</b></div>
+              <div class="side-row"><span>Porteur</span>
+                @if (porteur()?._id) {
+                  <a class="membre-link" [routerLink]="['/app', 'membre', porteur()._id]">{{ porteur()?.prenom }} {{ porteur()?.nom }}</a>
+                } @else {
+                  <b>Non renseigné</b>
+                }
+              </div>
               <div class="side-row"><span>Équipe</span><b>{{ p().equipe?.length || 0 }} membre(s)</b></div>
+              @if (p().equipe?.length) {
+                <div class="equipe-list">
+                  @for (m of p().equipe; track m._id) {
+                    <a class="membre-link" [routerLink]="['/app', 'membre', m._id]">{{ m.prenom }} {{ m.nom }}</a>
+                  }
+                </div>
+              }
               <div class="side-row"><span>Statut</span><b class="statut-tag" [class]="'statut--' + p().statut">{{ p().statut }}</b></div>
             </div>
           </div>
@@ -79,6 +92,9 @@ import { DatePipe } from '@angular/common';
     .side-row { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-sm); }
     .side-row span { color: var(--ink-700); }
     .side-row b { font-weight: 600; }
+    .membre-link { font-weight: 600; color: var(--ink-900); text-decoration: none; transition: color var(--transition); }
+    .membre-link:hover { color: var(--honey-600); }
+    .equipe-list { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line-200); padding-top: 12px; }
 
     .statut-tag { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; padding: 2px 10px; border-radius: 999px; }
     .statut--planification { background: rgba(91,79,224,0.1); color: var(--agentic-500); }
@@ -94,6 +110,7 @@ export class ProjetDetailComponent implements OnInit {
   private http = inject(HttpClient);
   p = signal<any>(null);
   loading = signal(true);
+  porteur = computed(() => this.p()?.porteur ?? this.p()?.equipe?.[0] ?? null);
 
   statusSteps = [
     { key: 'planification', label: 'Planification' },

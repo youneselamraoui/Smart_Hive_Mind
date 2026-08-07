@@ -6,6 +6,7 @@ import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
 import { fadeInUp } from '../../core/animations';
 import { ICONS } from '../../core/icons';
 import { ToastService } from '../../core/toast.service';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 interface Candidature {
   _id: string;
@@ -18,11 +19,11 @@ interface Candidature {
 @Component({
   selector: 'app-accepter-candidature',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DatePipe, SafeHtmlPipe],
   template: `
     <div class="section" @fadeInUp>
       <div class="page-header">
-        <div class="header-icon" [innerHTML]="ICONS.placements"></div>
+        <div class="header-icon" [innerHTML]="ICONS.placements | safeHtml"></div>
         <div>
           <h1>Accepter une candidature</h1>
           <p>Validez une candidature pour créer une mission</p>
@@ -38,7 +39,7 @@ interface Candidature {
       } @else {
         @if (candidatures.length === 0) {
           <div class="empty-state">
-            <div class="empty-icon" [innerHTML]="ICONS.placements"></div>
+            <div class="empty-icon" [innerHTML]="ICONS.placements | safeHtml"></div>
             <h3>Aucune candidature en attente</h3>
             <p>Les candidatures en attente apparaîtront ici.</p>
           </div>

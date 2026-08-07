@@ -18,7 +18,9 @@ router.get("/evenements", async (req, res) => {
 
 router.get("/evenements/:id", async (req, res) => {
     try {
-        const item = await Evenement.findById(req.params.id).populate("organisateurId", "nom prenom email");
+        const item = await Evenement.findById(req.params.id)
+            .populate("organisateurId", "nom prenom email")
+            .populate({ path: "oeuvresSoumises", populate: { path: "auteur", select: "nom prenom" } });
         if (!item) return res.status(404).json({ error: "Evenement introuvable." });
         res.json(item);
     } catch (err) {

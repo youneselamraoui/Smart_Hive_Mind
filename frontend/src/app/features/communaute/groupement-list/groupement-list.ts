@@ -7,16 +7,10 @@ function hashStr(s: string): number {
   let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h);
 }
 
-const PATTERNS = [
-  `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><path d="M60 2l51.96 30v60L60 122 8.04 92V32L60 2z" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.15"/><path d="M60 12l43.3 25v50L60 112 16.7 87V37L60 12z" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/></svg>`,
-  `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><line x1="0" y1="0" x2="120" y2="120" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="30" y1="0" x2="120" y2="90" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="0" y1="30" x2="90" y2="120" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="60" y1="0" x2="120" y2="60" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="0" y1="60" x2="60" y2="120" stroke="currentColor" stroke-width="0.5" opacity="0.12"/></svg>`,
-  `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle cx="20" cy="20" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="20" r="3" fill="currentColor" opacity="0.12"/><circle cx="100" cy="20" r="3" fill="currentColor" opacity="0.12"/><circle cx="40" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="80" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="120" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="20" cy="100" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="100" r="3" fill="currentColor" opacity="0.12"/><circle cx="100" cy="100" r="3" fill="currentColor" opacity="0.12"/><circle cx="0" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="140" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="-20" r="3" fill="currentColor" opacity="0.12"/></svg>`,
-  `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><circle cx="60" cy="60" r="35" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/><circle cx="60" cy="60" r="20" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.08"/></svg>`,
-  `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><path d="M0 40 Q30 0 60 40 Q90 80 120 40" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><path d="M0 70 Q30 30 60 70 Q90 110 120 70" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/><path d="M0 100 Q30 60 60 100 Q90 140 120 100" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.08"/></svg>`,
-];
+const PATTERNS_COUNT = 5;
 
-function patternFor(name: string): string {
-  return PATTERNS[hashStr(name) % PATTERNS.length];
+function patternIndex(name: string): number {
+  return hashStr(name) % PATTERNS_COUNT;
 }
 
 @Component({
@@ -70,7 +64,25 @@ function patternFor(name: string): string {
         <div class="group-grid">
           @for (g of groupements(); track g._id) {
             <div class="group-card">
-              <div class="group-bg" [innerHTML]="patternFor(g.nom)"></div>
+              <div class="group-bg">
+                @switch (patternIndex(g.nom)) {
+                  @case (0) {
+                    <svg viewBox="0 0 120 120" width="120" height="120" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60 2l51.96 30v60L60 122 8.04 92V32L60 2z" stroke="currentColor" stroke-width="0.5" opacity="0.15"/><path d="M60 12l43.3 25v50L60 112 16.7 87V37L60 12z" stroke="currentColor" stroke-width="0.5" opacity="0.1"/></svg>
+                  }
+                  @case (1) {
+                    <svg viewBox="0 0 120 120" width="120" height="120" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="120" y2="120" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="30" y1="0" x2="120" y2="90" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="0" y1="30" x2="90" y2="120" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="60" y1="0" x2="120" y2="60" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><line x1="0" y1="60" x2="60" y2="120" stroke="currentColor" stroke-width="0.5" opacity="0.12"/></svg>
+                  }
+                  @case (2) {
+                    <svg viewBox="0 0 120 120" width="120" height="120" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="20" r="3" fill="currentColor" opacity="0.12"/><circle cx="100" cy="20" r="3" fill="currentColor" opacity="0.12"/><circle cx="40" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="80" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="120" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="20" cy="100" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="100" r="3" fill="currentColor" opacity="0.12"/><circle cx="100" cy="100" r="3" fill="currentColor" opacity="0.12"/><circle cx="0" cy="60" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="140" r="3" fill="currentColor" opacity="0.12"/><circle cx="60" cy="-20" r="3" fill="currentColor" opacity="0.12"/></svg>
+                  }
+                  @case (3) {
+                    <svg viewBox="0 0 120 120" width="120" height="120" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="50" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><circle cx="60" cy="60" r="35" stroke="currentColor" stroke-width="0.5" opacity="0.1"/><circle cx="60" cy="60" r="20" stroke="currentColor" stroke-width="0.5" opacity="0.08"/></svg>
+                  }
+                  @default {
+                    <svg viewBox="0 0 120 120" width="120" height="120" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 40 Q30 0 60 40 Q90 80 120 40" stroke="currentColor" stroke-width="0.5" opacity="0.12"/><path d="M0 70 Q30 30 60 70 Q90 110 120 70" stroke="currentColor" stroke-width="0.5" opacity="0.1"/><path d="M0 100 Q30 60 60 100 Q90 140 120 100" stroke="currentColor" stroke-width="0.5" opacity="0.08"/></svg>
+                  }
+                }
+              </div>
               <div class="group-body">
                 <h3>{{ g.nom }}</h3>
                 @if (g.theme) { <span class="group-theme">{{ g.theme }}</span> }
@@ -163,7 +175,7 @@ export class GroupementListComponent implements OnInit {
   newNom = ''; newTheme = ''; newDescription = ''; newRegles = '';
   membreId = localStorage.getItem('membreId') || '';
 
-  patternFor = patternFor;
+  patternIndex = patternIndex;
 
   ngOnInit() { this.load(); }
 

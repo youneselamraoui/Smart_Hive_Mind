@@ -9,7 +9,7 @@ import { DecimalPipe, DatePipe } from '@angular/common';
   imports: [RouterLink, DatePipe, DecimalPipe],
   template: `
     <div class="page">
-      <div class="page-head"><div><h1>Business Plans</h1><p>Dossiers investisseurs</p></div></div>
+      <div class="page-head"><div><h1>Business Plans</h1><p>Dossiers investisseurs</p></div><a class="new-btn" routerLink="/app/entrepreneuriat/business-plans/new">Nouveau business plan</a></div>
 
       @if (loading()) {
         <div class="skel-grid">@for (i of [1,2,3]; track i) { <div class="skel-card"><div class="skel-line w-60"></div><div class="skel-line w-40"></div><div class="skel-line w-80"></div></div> }</div>
@@ -42,9 +42,11 @@ import { DecimalPipe, DatePipe } from '@angular/common';
   `,
   styles: [`
     :host { display: block; }
-    .page-head { margin-bottom: 24px; }
+    .page-head { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .page-head h1 { font-size: var(--text-2xl); margin: 0 0 2px; }
     .page-head p { margin: 0; font-size: var(--text-sm); color: var(--ink-700); }
+    .new-btn { padding: 8px 16px; border-radius: var(--radius-sm); background: var(--honey-500); color: var(--ink-900); font-size: var(--text-sm); font-weight: 600; text-decoration: none; white-space: nowrap; transition: filter var(--transition); }
+    .new-btn:hover { filter: brightness(1.08); }
 
     .skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
     .skel-card { background: var(--color-surface); border: 1px solid var(--line-200); border-radius: var(--radius-md); padding: 20px; }

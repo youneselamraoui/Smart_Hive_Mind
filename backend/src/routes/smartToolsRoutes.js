@@ -1,11 +1,11 @@
 const { Router } = require("express");
 const validate = require("../middlewares/validate");
 const auth = require("../middlewares/auth");
-const internalAuth = require("../middlewares/internalAuth");
+const authOrInternal = require("../middlewares/authOrInternal");
 const ctrl = require("../controllers/smartToolsController");
 const { createDatasetSchema } = require("../validators/datasetSchema");
 const { createAtelierSchema } = require("../validators/atelierSchema");
-const { publishModelSchema } = require("../validators/modeleIASchema");
+const { publishModelSchema, publishModelJsonSchema } = require("../validators/modeleIASchema");
 const Atelier = require("../models/Atelier");
 
 const router = Router();
@@ -20,8 +20,8 @@ router.get("/smart-tools/ateliers/:id", async (req, res) => {
         res.status(500).json({ error: "Erreur interne." });
     }
 });
-router.post("/smart-tools/ateliers/:id/progress", internalAuth, ctrl.reportProgress);
-router.post("/smart-tools/ateliers/:id/finalize", internalAuth, ctrl.finalizeAtelier);
+router.post("/smart-tools/ateliers/:id/progress", authOrInternal, ctrl.reportProgress);
+router.post("/smart-tools/ateliers/:id/finalize", authOrInternal, ctrl.finalizeAtelier);
 
 router.get("/smart-tools/datasets", async (req, res) => {
     try {
@@ -36,5 +36,6 @@ router.get("/smart-tools/datasets/:id/download", ctrl.downloadDataset);
 
 router.get("/smart-tools/models", ctrl.listModels);
 router.post("/smart-tools/models", auth, ctrl.uploadMiddleware, validate(publishModelSchema), ctrl.publishModel);
+router.post("/smart-tools/models/json", authOrInternal, validate(publishModelJsonSchema), ctrl.publishModelJson);
 
 module.exports = router;

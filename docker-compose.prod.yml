@@ -6,6 +6,7 @@ volumes:
   loki-data:
   uptime-kuma-data:
   backup-data:
+  chroma-data:
 
 networks:
   shm-network:
@@ -96,13 +97,19 @@ services:
         - NODE_ENV=production
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=${MONGO_URI}
+      - MONGO_URI=${MONGO_URI}
       - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:4000
-      - AI_DIAGNOSTIC_URL=http://ai-diagnostic:8000
-      - AI_PREDICTIVE_URL=http://ai-predictive:8000
-      - AI_DECISIONNEL_URL=http://ai-decisionnel:8000
-      - AI_CONVERSATIONAL_URL=http://ai-conversational:8000
+      - IA_DIAGNOSTIC_URL=http://ai-diagnostic:8000
+      - IA_PREDICTIVE_URL=http://ai-predictive:8000
+      - IA_DECISIONNEL_URL=http://ai-decisionnel:8000
+      - IA_CONVERSATIONAL_URL=http://ai-conversational:8000
+      - IA_OPTIMISATION_URL=http://ai-optimisation:8000
+      - IA_AGENTIC_URL=http://ai-agentic:8000
+      - BACKEND_INTERNAL_URL=http://backend:3000
       - JWT_SECRET=${JWT_SECRET}
+      - SEPOLIA_RPC_URL=${SEPOLIA_RPC_URL}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
       - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
       - PORT=3000
     depends_on:
@@ -203,6 +210,9 @@ services:
     environment:
       - MONGODB_URI=${MONGO_URI}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHROMA_PERSIST_DIR=/data/chroma
+    volumes:
+      - chroma-data:/data/chroma
     depends_on:
       mongo:
         condition: service_healthy
@@ -222,6 +232,7 @@ services:
     build: ./ai-services/agentic
     environment:
       - INTERNAL_SERVICE_KEY=${INTERNAL_SERVICE_KEY}
+      - BACKEND_URL=http://backend:3000
     depends_on:
       mongo:
         condition: service_healthy
@@ -230,6 +241,23 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  ai-optimisation:
+    build: ./ai-services/optimisation
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - shm-network
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: "0.25"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s

@@ -2,6 +2,7 @@ const Idee = require("../models/Idee");
 const Projet = require("../models/Projet");
 const BusinessPlan = require("../models/BusinessPlan");
 const CampagneCrowdfunding = require("../models/CampagneCrowdfunding");
+const { anchorEntity } = require("../services/blockchainService");
 
 const IA_CONVERSATIONAL_URL =
     process.env.IA_CONVERSATIONAL_URL || "http://ai-conversational:8000";
@@ -96,6 +97,7 @@ exports.promoteToProjet = async (req, res) => {
 
         const projet = await Projet.create({
             ideeId: idee._id,
+            porteurId: idee.auteurId,
             equipe: [idee.auteurId],
             statut: "planification",
         });
@@ -332,6 +334,67 @@ exports.createCampagne = async (req, res) => {
         });
 
         res.status(201).json(campagne);
+    } catch (err) {
+        if (err.name === "ValidationError") {
+            return res.status(400).json({ error: err.message });
+        }
+        res.status(500).json({ error: "Erreur interne du serveur." });
+    }
+};
+
+/**
+ * Ancrer une idee sur la blockchain (securite d'integrite du contenu).
+ * Controle d'acces : seul l'auteur de l'idee (ou un admin) peut ancrer.
+ * Le double ancrage est refuse explicitement.
+ */
+exports.ancrerIdee = async (req, res) => {
+    try {
+        const idee = await Idee.findById(req.params.id);
+        if (!idee) {
+            return res.status(404).json({ error: "Idee introuvable." });
+        }
+
+        const auteurId = idee.auteurId?.toString?.() ?? idee.auteurId;
+        if (auteurId !== req.membre.id.toString() && req.membre.role !== "admin") {
+            return res.status(403).json({
+                error: "Seul l'auteur de l'idee peut l'ancrer sur la blockchain.",
+            });
+        }
+
+        if (idee.preuve?.statut === "ancre") {
+            return res.status(400).json({
+                error: "Cette idee est deja ancree sur la blockchain.",
+            });
+        }
+
+        try {
+            const contenu = `${idee.titre}\n${idee.description}`;
+            const { hashContenu, preuve } = await anchorEntity("idee", idee._id, contenu);
+
+            const ideeMaj = await Idee.findById(idee._id).populate("auteurId", "nom prenom email");
+            res.json({
+                message: "Idee ancre sur la blockchain.",
+                hashContenu,
+                preuve,
+                idee: ideeMaj,
+            });
+        } catch (anchorErr) {
+            if (anchorErr.preuve) {
+                try {
+                    await Idee.findByIdAndUpdate(
+                        idee._id,
+                        { preuve: anchorErr.preuve },
+                        { runValidators: true }
+                    );
+                } catch {
+                    // Persistance de l'echec best-effort; la reponse d'erreur prime
+                }
+            }
+            return res.status(anchorErr.status || 502).json({
+                error: anchorErr.message || "Echec de l'ancrage blockchain.",
+                detail: anchorErr.detail,
+            });
+        }
     } catch (err) {
         if (err.name === "ValidationError") {
             return res.status(400).json({ error: err.message });

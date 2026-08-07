@@ -37,10 +37,12 @@ router.get("/bounties/:id", async (req, res) => {
 
 router.post("/bounties", auth, validate(createBountySchema), bountyCtrl.createBounty);
 router.post("/bounties/:id/soumettre", auth, validate(submitBountySchema), bountyCtrl.submitSolution);
+router.post("/bounties/:id/selectionner-gagnant", auth, bountyCtrl.selectWinner);
 router.post("/offres", auth, validate(createOffreSchema), offreCtrl.createOffre);
 router.post("/bourses-recherche", auth, validate(createBourseRechercheSchema), bourseCtrl.createBourseRecherche);
 router.post("/taches-crowdsourcing", auth, validate(createTacheCrowdsourcingSchema), tacheCtrl.createTacheCrowdsourcing);
 router.post("/taches-crowdsourcing/:id/repartir", auth, tacheCtrl.repartirTaches);
+router.post("/taches-crowdsourcing/:id/ancrer", auth, tacheCtrl.ancrerTacheCrowdsourcing);
 
 router.get("/taches-crowdsourcing", async (req, res) => {
     try {

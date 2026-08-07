@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const preuveSchema = require("./schemas/preuveSchema");
 
 const evaluationSchema = new mongoose.Schema({
     noteOriginalite: { type: Number, min: 0, max: 10 },
@@ -8,13 +9,6 @@ const evaluationSchema = new mongoose.Schema({
     commentaire: { type: String, maxlength: 2000 },
     niveau: { type: String, enum: ["ia", "humain"], required: true },
     dateEvaluation: { type: Date, default: Date.now },
-});
-
-const preuveSchema = new mongoose.Schema({
-    hash: { type: String },
-    txHash: { type: String },
-    blockNumber: { type: Number },
-    statut: { type: String, enum: ["en_attente", "ancre", "echec"], default: "en_attente" },
 });
 
 const assistanceSegmentSchema = new mongoose.Schema({
@@ -34,6 +28,7 @@ const publicationSchema = new mongoose.Schema(
             default: "brouillon",
         },
         hashContenu: { type: String },
+        journalId: { type: mongoose.Schema.Types.ObjectId, ref: "Journal" },
         preuve: { type: preuveSchema, default: () => ({}) },
         evaluations: [evaluationSchema],
         assistanceDetails: [assistanceSegmentSchema],

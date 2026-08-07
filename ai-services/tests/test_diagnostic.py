@@ -2,7 +2,7 @@
 Tests du service Diagnostic (Anti-plagiat).
 Tous les appels a gemini_client sont mockes pour ne pas consommer le quota
 gratuit Gemini a chaque run de CI. Les vecteurs d embedding sont des factices
-de dimension 768 (dimension de text-embedding-004, confirmee par la doc
+de dimension 768 (dimension de gemini-embedding-001, confirmee par la doc
 Google : https://cloud.google.com/vertex-ai/docs/vector-search-2/embeddings/autogenerating-embeddings).
 
 Pour un vrai test de bout en bout contre l API Gemini, lancer :
@@ -12,11 +12,9 @@ import pytest
 import numpy as np
 from unittest.mock import patch
 from httpx import AsyncClient, ASGITransport
-from conftest import add_service_path
+from conftest import load_service_main
 
-add_service_path("diagnostic")
-
-EMBEDDING_DIM = 768  # text-embedding-004
+EMBEDDING_DIM = 768  # gemini-embedding-001
 
 
 def _fake_vec(seed: int = 0) -> list[float]:
@@ -56,8 +54,8 @@ def _mock_gemini():
         return _fake_vec(abs(hash(texte)) % 1000)
 
     patches = [
-        patch("src.gemini_client.get_embedding", side_effect=fake_get_embedding),
-        patch("src.corpus.get_corpus_embeddings", return_value=FAKE_CORPUS),
+        patch("src_diagnostic.gemini_client.get_embedding", side_effect=fake_get_embedding),
+        patch("src_diagnostic.corpus.get_corpus_embeddings", return_value=FAKE_CORPUS),
     ]
     for p in patches:
         p.start()
@@ -68,8 +66,7 @@ def _mock_gemini():
 
 @pytest.fixture(scope="module")
 def app():
-    from main import app as _app
-    yield _app
+    yield load_service_main("diagnostic").app
 
 
 @pytest.mark.asyncio
@@ -123,7 +120,7 @@ async def test_e2e_reelle_api_gemini():
     Verification ponctuelle que l API Gemini repond correctement.
     Lancer avec : GEMINI_API_KEY=... pytest ... -k e2e
     """
-    from src.gemini_client import get_embedding
+    from src_diagnostic.gemini_client import get_embedding
 
     vec = get_embedding("Texte de test pour validation manuelle.")
     assert len(vec) == EMBEDDING_DIM, f"Dimension inattendue : {len(vec)} (attendu: {EMBEDDING_DIM})"

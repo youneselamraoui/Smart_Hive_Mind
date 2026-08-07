@@ -5,26 +5,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { ToastService } from '../../../core/toast.service';
-
-function identiconSvg(id: string, name: string): string {
-  let hash = 0; const str = id || name;
-  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-  const hue = Math.abs(hash % 360);
-  const cells: string[] = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const ci = r * 4 + (c < 2 ? c : 3 - c);
-      const on = ((hash >> (ci % 16)) & 1) === 1;
-      if (on) cells.push(`<rect x="${c * 5 + 2}" y="${r * 5 + 2}" width="5" height="5" rx="1" fill="hsl(${hue},40%,${50 + (ci % 3) * 12}%)" opacity="0.8"/>`);
-    }
-  }
-  return `<svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">${cells.join('')}</svg>`;
-}
+import { IdenticonComponent } from '../../../core/identicon.component';
 
 @Component({
   selector: 'app-sujet-detail',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, DatePipe],
+  imports: [RouterLink, ReactiveFormsModule, DatePipe, IdenticonComponent],
   template: `
     <div class="detail-page">
       <a routerLink="/communaute" class="back-link">
@@ -40,7 +26,7 @@ function identiconSvg(id: string, name: string): string {
       } @else { @let s = sujet()!;
         <!-- Original sujet message -->
         <div class="thread-root">
-          <div class="thread-identicon" [innerHTML]="identicon(s.auteurId?._id || '', (s.auteurId?.prenom || '') + (s.auteurId?.nom || ''))"></div>
+          <div class="thread-identicon"><app-identicon [id]="s.auteurId?._id || ''" [name]="(s.auteurId?.prenom || '') + (s.auteurId?.nom || '')" [size]="28"></app-identicon></div>
           <div class="thread-content">
             <div class="thread-head">
               <h1>{{ s.titre }}</h1>
@@ -63,7 +49,7 @@ function identiconSvg(id: string, name: string): string {
             <div class="thread-list">
               @for (d of s.discussions; track d._id) {
                 <div class="thread-reply" [class.reply--op]="isOp(d, s)">
-                  <div class="thread-identicon" [innerHTML]="identicon(d.auteurId?._id || '', (d.auteurId?.prenom || '') + (d.auteurId?.nom || ''))"></div>
+                  <div class="thread-identicon"><app-identicon [id]="d.auteurId?._id || ''" [name]="(d.auteurId?.prenom || '') + (d.auteurId?.nom || '')" [size]="28"></app-identicon></div>
                   <div class="thread-content">
                     <div class="thread-head">
                       <span class="thread-author">{{ d.auteurId?.prenom }} {{ d.auteurId?.nom }}</span>
@@ -161,10 +147,6 @@ export class SujetDetailComponent implements OnInit, OnDestroy {
       error: () => { this.loading.set(false); this.toast.error('Sujet introuvable.'); },
       complete: () => this.loading.set(false),
     });
-  }
-
-  identicon(id: string, name: string): string {
-    return identiconSvg(id, name);
   }
 
   isOp(d: any, s: any): boolean {

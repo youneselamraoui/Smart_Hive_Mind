@@ -7,15 +7,16 @@ import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { ToastService } from '../../core/toast.service';
 import { ICONS } from '../../core/icons';
+import { SafeHtmlPipe } from '../../core/safe-html.pipe';
 
 @Component({
   selector: 'app-prestation-form',
   standalone: true,
-  imports: [ReactiveFormsModule, Textarea, Button],
+  imports: [ReactiveFormsModule, Textarea, Button, SafeHtmlPipe],
   template: `
     <div class="prestation-form-page">
       <div class="page-header">
-        <div class="header-icon" [innerHTML]="ICONS.zap"></div>
+        <div class="header-icon" [innerHTML]="ICONS.zap | safeHtml"></div>
         <div>
           <h1>{{ isEdit() ? 'Modifier la prestation' : 'Nouvelle prestation' }}</h1>
           <p>{{ isEdit() ? 'Modifiez les détails de votre prestation' : 'Proposez un service à la communauté' }}</p>

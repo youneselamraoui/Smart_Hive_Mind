@@ -82,7 +82,8 @@ export class CandidatureListComponent implements OnInit {
   loading = signal(true);
 
   ngOnInit() {
-    this.http.get<Candidature[]>('/api/placements/candidatures?statut=en_attente').subscribe({
+    const membreId = localStorage.getItem('membreId');
+    this.http.get<Candidature[]>('/api/placements/candidatures?membreId=' + (membreId || '')).subscribe({
       next: list => this.candidatures.set(list),
       error: () => this.toast.error('Impossible de charger les candidatures.'),
       complete: () => this.loading.set(false),

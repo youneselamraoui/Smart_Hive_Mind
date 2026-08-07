@@ -140,4 +140,31 @@ async function reinitialiserMotDePasse(req, res) {
     }
 }
 
-module.exports = { inscription, connexion, me, deconnexion, updateProfil, demanderResetMotDePasse, verifierCodeReset, reinitialiserMotDePasse };
+async function getProfilCertifie(req, res) {
+    try {
+        const ProfilCertifie = require("../models/ProfilCertifie");
+        let profil = await ProfilCertifie.findOne({ membreId: req.params.id })
+            .populate("competencesValidees.missionId")
+            .populate("competencesValidees.validePar", "nom prenom email")
+            .populate("formationsSuivies.formationId")
+            .populate("historiqueMissions.missionId")
+            .populate("oeuvresProuvees.publicationId", "titre");
+
+        if (!profil) {
+            profil = {
+                membreId: req.params.id,
+                competencesValidees: [],
+                formationsSuivies: [],
+                historiqueMissions: [],
+                oeuvresProuvees: [],
+                reputationScore: 0,
+            };
+        }
+
+        res.json(profil);
+    } catch (err) {
+        res.status(500).json({ error: "Erreur interne du serveur." });
+    }
+}
+
+module.exports = { inscription, connexion, me, deconnexion, updateProfil, demanderResetMotDePasse, verifierCodeReset, reinitialiserMotDePasse, getProfilCertifie };

@@ -24,6 +24,11 @@ export const routes: Routes = [
     title: 'Mot de passe oublié',
   },
   {
+    path: 'forbidden',
+    loadComponent: () => import('./pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent),
+    title: 'Accès refusé',
+  },
+  {
     path: 'app',
     component: MainLayoutComponent,
     canActivate: [authGuard],
@@ -37,6 +42,21 @@ export const routes: Routes = [
         path: 'publications',
         loadChildren: () =>
           import('./features/publications/publications.routes').then(m => m.publicationsRoutes),
+      },
+      {
+        path: 'journaux',
+        loadChildren: () =>
+          import('./features/journal/journal.routes').then(m => m.journalRoutes),
+      },
+      {
+        path: 'structures-recherche',
+        loadChildren: () =>
+          import('./features/recherche/recherche.routes').then(m => m.structureRechercheRoutes),
+      },
+      {
+        path: 'projets-recherche',
+        loadChildren: () =>
+          import('./features/recherche/recherche.routes').then(m => m.projetRechercheFinanceRoutes),
       },
       {
         path: 'communaute',
